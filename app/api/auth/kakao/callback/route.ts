@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminAuth } from "@/lib/firebase/admin";
+import { adminAuth, adminDb } from "@/lib/firebase/admin";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -54,20 +54,49 @@ export async function GET(request: Request) {
     const uid = `kakao:${userData.id}`;
     const email = userData.kakao_account?.email || `${userData.id}@kakao.qollab.com`;
     const displayName = userData.kakao_account?.profile?.nickname || "카카오 사용자";
+    const photoURL = userData.kakao_account?.profile?.profile_image_url || "";
 
+    let isNewUser = false;
     try {
       await adminAuth.getUser(uid);
-      await adminAuth.updateUser(uid, { displayName, email });
+      await adminAuth.updateUser(uid, { displayName, email, photoURL });
     } catch {
-      await adminAuth.createUser({ uid, email, displayName });
+      await adminAuth.createUser({ uid, email, displayName, photoURL });
+      isNewUser = true;
+    }
+
+    // Upsert Firestore User Profile Document
+    const userDocRef = adminDb.collection("users").doc(uid);
+    const existingDoc = await userDocRef.get();
+
+    if (!existingDoc.exists) {
+      isNewUser = true;
+      await userDocRef.set({
+        uid,
+        email,
+        displayName,
+        photoURL,
+        role,
+        termsAgreed: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+    } else {
+      await userDocRef.update({
+        displayName,
+        email,
+        photoURL,
+        updatedAt: new Date().toISOString(),
+      });
     }
 
     await adminAuth.setCustomUserClaims(uid, { role });
     const customToken = await adminAuth.createCustomToken(uid, { role });
 
-    const redirectTarget = new URL("/auth/login", request.url);
+    const redirectTarget = new URL(isNewUser ? "/onboarding" : "/auth/login", request.url);
     redirectTarget.searchParams.set("customToken", customToken);
     redirectTarget.searchParams.set("role", role);
+    if (isNewUser) redirectTarget.searchParams.set("isNewUser", "true");
 
     const response = NextResponse.redirect(redirectTarget);
     response.cookies.set("qollab_user_role", role, { path: "/", maxAge: 60 * 60 * 24 * 7 });

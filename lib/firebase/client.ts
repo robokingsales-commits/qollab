@@ -19,7 +19,22 @@ const storage = getStorage(app);
 
 export const loginWithGoogle = async () => {
   const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
   return await signInWithPopup(auth, provider);
+};
+
+export const loginWithGoogleRedirect = (role: string = "consumer") => {
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
+  const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI || "https://qollab-gules.vercel.app/api/auth/callback/google";
+  
+  if (clientId && !clientId.includes("your-google-client-id")) {
+    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(
+      redirectUri
+    )}&response_type=code&scope=${encodeURIComponent("openid email profile")}&state=${role}`;
+    window.location.href = googleAuthUrl;
+    return true;
+  }
+  return false;
 };
 
 export const loginWithKakao = (role: string = "consumer") => {

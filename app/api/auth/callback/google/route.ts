@@ -7,50 +7,61 @@ export async function GET(request: Request) {
   const state = searchParams.get("state") || "consumer";
   const role = ["owner", "admin"].includes(state) ? state : "consumer";
 
-  const clientId = process.env.NAVER_CLIENT_ID || process.env.NEXT_PUBLIC_NAVER_CLIENT_ID;
-  const clientSecret = process.env.NAVER_CLIENT_SECRET;
+  const clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI || process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI;
 
-  if (!code || !clientId || !clientSecret) {
+  if (!code || !clientId || !clientSecret || !redirectUri) {
     return NextResponse.redirect(
-      new URL(`/auth/login?error=${encodeURIComponent("Missing authorization code or Naver credentials")}`, request.url)
+      new URL(
+        `/auth/login?error=${encodeURIComponent(
+          "Missing Google OAuth configuration (GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET)"
+        )}`,
+        request.url
+      )
     );
   }
 
   try {
-    const tokenUrl = new URL("https://nid.naver.com/oauth2.0/token");
-    tokenUrl.searchParams.set("grant_type", "authorization_code");
-    tokenUrl.searchParams.set("client_id", clientId);
-    tokenUrl.searchParams.set("client_secret", clientSecret);
-    tokenUrl.searchParams.set("code", code);
-    tokenUrl.searchParams.set("state", state);
+    const tokenParams = new URLSearchParams({
+      code,
+      client_id: clientId,
+      client_secret: clientSecret,
+      redirect_uri: redirectUri,
+      grant_type: "authorization_code",
+    });
 
-    const tokenRes = await fetch(tokenUrl.toString(), { method: "GET" });
+    const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: tokenParams.toString(),
+    });
+
     const tokenData = await tokenRes.json();
 
     if (!tokenRes.ok || !tokenData.access_token) {
-      const errorMsg = tokenData.error_description || tokenData.error || "Failed to retrieve Naver access token";
+      const errorMsg = tokenData.error_description || tokenData.error || "Failed to exchange Google OAuth code";
       return NextResponse.redirect(
         new URL(`/auth/login?error=${encodeURIComponent(errorMsg)}`, request.url)
       );
     }
 
-    const userRes = await fetch("https://openapi.naver.com/v1/nid/me", {
+    const userRes = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
       headers: { Authorization: `Bearer ${tokenData.access_token}` },
     });
 
     const userData = await userRes.json();
 
-    if (!userRes.ok || userData.resultcode !== "00" || !userData.response?.id) {
+    if (!userRes.ok || !userData.id) {
       return NextResponse.redirect(
-        new URL(`/auth/login?error=${encodeURIComponent("Failed to fetch Naver user profile")}`, request.url)
+        new URL(`/auth/login?error=${encodeURIComponent("Failed to fetch Google user profile")}`, request.url)
       );
     }
 
-    const naverProfile = userData.response;
-    const uid = `naver:${naverProfile.id}`;
-    const email = naverProfile.email || `${naverProfile.id}@naver.qollab.com`;
-    const displayName = naverProfile.name || naverProfile.nickname || "네이버 사용자";
-    const photoURL = naverProfile.profile_image || "";
+    const uid = `google:${userData.id}`;
+    const email = userData.email || `${userData.id}@google.qollab.com`;
+    const displayName = userData.name || "Google 사용자";
+    const photoURL = userData.picture || "";
 
     let isNewUser = false;
     try {
@@ -98,7 +109,8 @@ export async function GET(request: Request) {
     response.cookies.set("qollab_user_role", role, { path: "/", maxAge: 60 * 60 * 24 * 7 });
     return response;
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Naver OAuth Exception";
+    const message = err instanceof Error ? err.message : "Google OAuth Callback Exception";
+    console.error("Google OAuth Error:", err);
     return NextResponse.redirect(
       new URL(`/auth/login?error=${encodeURIComponent(message)}`, request.url)
     );
