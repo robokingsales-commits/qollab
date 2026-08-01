@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { adminAuth, adminDb } from "@/lib/firebase/admin";
+import { getAdminAuth, getAdminDb } from "@/lib/firebase/admin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -62,17 +62,20 @@ export async function GET(request: Request) {
     const displayName = naverProfile.name || naverProfile.nickname || "네이버 사용자";
     const photoURL = naverProfile.profile_image || "";
 
+    const auth = getAdminAuth();
+    const db = getAdminDb();
+
     let isNewUser = false;
     try {
-      await adminAuth.getUser(uid);
-      await adminAuth.updateUser(uid, { displayName, email, photoURL });
+      await auth.getUser(uid);
+      await auth.updateUser(uid, { displayName, email, photoURL });
     } catch {
-      await adminAuth.createUser({ uid, email, displayName, photoURL });
+      await auth.createUser({ uid, email, displayName, photoURL });
       isNewUser = true;
     }
 
     // Upsert Firestore User Profile Document
-    const userDocRef = adminDb.collection("users").doc(uid);
+    const userDocRef = db.collection("users").doc(uid);
     const existingDoc = await userDocRef.get();
 
     if (!existingDoc.exists) {
@@ -96,8 +99,8 @@ export async function GET(request: Request) {
       });
     }
 
-    await adminAuth.setCustomUserClaims(uid, { role });
-    const customToken = await adminAuth.createCustomToken(uid, { role });
+    await auth.setCustomUserClaims(uid, { role });
+    const customToken = await auth.createCustomToken(uid, { role });
 
     const redirectTarget = new URL(isNewUser ? "/onboarding" : "/auth/login", request.url);
     redirectTarget.searchParams.set("customToken", customToken);
