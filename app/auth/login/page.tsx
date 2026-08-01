@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { loginWithGoogle, loginWithKakao, loginWithNaver } from "@/lib/firebase/client";
+import { auth, loginWithGoogle, loginWithKakao, loginWithNaver, signInWithCustomToken } from "@/lib/firebase/client";
 import { UserRole } from "@/lib/types/schema";
 import { Sparkles, ShieldCheck, Mail, Lock } from "lucide-react";
 import Cookies from "js-cookie";
@@ -11,11 +11,38 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("redirect") || "/";
+  const customToken = searchParams.get("customToken");
+  const errorMsg = searchParams.get("error");
+  const urlRole = searchParams.get("role") as UserRole | null;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [selectedRole, setSelectedRole] = useState<UserRole>("consumer");
+  const [selectedRole, setSelectedRole] = useState<UserRole>(urlRole || "consumer");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (customToken) {
+      setLoading(true);
+      const targetRole = urlRole || "consumer";
+      Cookies.set("qollab_user_role", targetRole, { expires: 7 });
+
+      signInWithCustomToken(auth, customToken)
+        .then(() => {
+          if (targetRole === "owner") {
+            router.push("/owner/stores");
+          } else if (targetRole === "admin") {
+            router.push("/admin/stores");
+          } else {
+            router.push(redirectPath);
+          }
+        })
+        .catch((err) => {
+          console.warn("Custom token sign-in error", err);
+          alert("소셜 로그인 인증 실패: " + (err.message || "오류 발생"));
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [customToken, urlRole, redirectPath, router]);
 
   const handleRoleSelection = async (uid: string, role: UserRole) => {
     Cookies.set("qollab_user_role", role, { expires: 7 });
@@ -42,11 +69,16 @@ function LoginContent() {
   const handleSocialLogin = async (provider: "google" | "kakao" | "naver") => {
     setLoading(true);
     try {
-      let res;
-      if (provider === "google") res = await loginWithGoogle();
-      else if (provider === "kakao") res = await loginWithKakao();
-      else res = await loginWithNaver();
+      if (provider === "kakao") {
+        loginWithKakao(selectedRole);
+        return;
+      }
+      if (provider === "naver") {
+        loginWithNaver(selectedRole);
+        return;
+      }
 
+      const res = await loginWithGoogle();
       if (res?.user) {
         await handleRoleSelection(res.user.uid, selectedRole);
       }
@@ -79,6 +111,12 @@ function LoginContent() {
             소셜 간편 로그인 또는 이메일 계정으로 접속하세요
           </p>
         </div>
+
+        {errorMsg && (
+          <div className="rounded-xl bg-rose-50 p-3 text-xs font-semibold text-rose-700 border border-rose-200">
+            소셜 로그인 오류: {errorMsg}
+          </div>
+        )}
 
         <div className="space-y-2">
           <label className="block text-xs font-bold text-gray-700">

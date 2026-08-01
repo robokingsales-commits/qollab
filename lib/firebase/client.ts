@@ -1,11 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import {
-  getAuth,
-  GoogleAuthProvider,
-  OAuthProvider,
-  signInWithPopup,
-  signOut,
-} from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithCustomToken } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
@@ -18,19 +12,32 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:123456789:web:123456789",
 };
 
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Social Auth Providers
-const googleProvider = new GoogleAuthProvider();
-const kakaoProvider = new OAuthProvider("oidc.kakao");
-const naverProvider = new OAuthProvider("oidc.naver");
+export const loginWithGoogle = async () => {
+  const provider = new GoogleAuthProvider();
+  return await signInWithPopup(auth, provider);
+};
 
-export const loginWithGoogle = () => signInWithPopup(auth, googleProvider);
-export const loginWithKakao = () => signInWithPopup(auth, kakaoProvider);
-export const loginWithNaver = () => signInWithPopup(auth, naverProvider);
-export const logoutUser = () => signOut(auth);
+export const loginWithKakao = (role: string = "consumer") => {
+  const clientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || "f374580fccoee2e4f29fdd081d1e390b";
+  const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || "https://qollab-gules.vercel.app/api/auth/kakao/callback";
+  const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
+    redirectUri
+  )}&response_type=code&state=${role}`;
+  window.location.href = kakaoAuthUrl;
+};
 
-export { app, auth, db, storage };
+export const loginWithNaver = (role: string = "consumer") => {
+  const clientId = process.env.NEXT_PUBLIC_NAVER_CLIENT_ID || "xLpTMSCykwss_uaeOqgI";
+  const redirectUri = process.env.NEXT_PUBLIC_NAVER_REDIRECT_URI || "https://qollab-gules.vercel.app/api/auth/naver/callback";
+  const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(
+    redirectUri
+  )}&state=${role}`;
+  window.location.href = naverAuthUrl;
+};
+
+export { app, auth, db, storage, signInWithCustomToken };
