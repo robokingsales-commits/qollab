@@ -4,7 +4,7 @@ import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 
 function initAdminApp(): App {
-  if (getApps().length > 0) {
+  if (getApps().length > 0 && getApps()[0]) {
     return getApps()[0];
   }
 

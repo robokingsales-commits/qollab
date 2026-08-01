@@ -10,7 +10,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Required: voucherId or code" }, { status: 400 });
     }
 
-    const result = await adminDb.runTransaction(async (transaction) => {
+    const result = await adminDb.runTransaction(async (transaction: FirebaseFirestore.Transaction) => {
       let voucherRef;
       if (voucherId) {
         voucherRef = adminDb.collection("vouchers").doc(voucherId);
