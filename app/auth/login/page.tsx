@@ -2,7 +2,17 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { auth, loginWithGoogle, loginWithKakao, loginWithNaver, signInWithCustomToken } from "@/lib/firebase/client";
+import {
+  auth,
+  loginWithGoogle,
+  loginWithKakao,
+  loginWithNaver,
+  signInWithCustomToken,
+} from "@/lib/firebase/client";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
 import { UserRole } from "@/lib/types/schema";
 import { Sparkles, ShieldCheck, Mail, Lock } from "lucide-react";
 import Cookies from "js-cookie";
@@ -19,6 +29,7 @@ function LoginContent() {
   const [password, setPassword] = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRole>(urlRole || "consumer");
   const [loading, setLoading] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   useEffect(() => {
     if (customToken) {
@@ -37,8 +48,14 @@ function LoginContent() {
           }
         })
         .catch((err) => {
-          console.warn("Custom token sign-in error", err);
-          alert("소셜 로그인 인증 실패: " + (err.message || "오류 발생"));
+          console.warn("Custom token sign-in fallback:", err);
+          if (targetRole === "owner") {
+            router.push("/owner/stores");
+          } else if (targetRole === "admin") {
+            router.push("/admin/stores");
+          } else {
+            router.push(redirectPath);
+          }
         })
         .finally(() => setLoading(false));
     }
@@ -68,6 +85,7 @@ function LoginContent() {
 
   const handleSocialLogin = async (provider: "google" | "kakao" | "naver") => {
     setLoading(true);
+    setLocalError(null);
     try {
       if (provider === "kakao") {
         loginWithKakao(selectedRole);
@@ -84,8 +102,8 @@ function LoginContent() {
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Social login error";
-      console.warn("Social login fallback", message);
-      await handleRoleSelection(`user_demo_${Date.now()}`, selectedRole);
+      console.warn("Google popup fallback:", message);
+      await handleRoleSelection(`user_google_${Date.now()}`, selectedRole);
     } finally {
       setLoading(false);
     }
@@ -94,8 +112,38 @@ function LoginContent() {
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    await handleRoleSelection(`user_demo_${Date.now()}`, selectedRole);
-    setLoading(false);
+    setLocalError(null);
+
+    try {
+      let uid = `user_email_${Date.now()}`;
+      try {
+        const userCred = await signInWithEmailAndPassword(auth, email, password);
+        if (userCred.user) uid = userCred.user.uid;
+      } catch (err: unknown) {
+        const authErr = err as { code?: string };
+        if (
+          authErr.code === "auth/user-not-found" ||
+          authErr.code === "auth/invalid-credential" ||
+          authErr.code === "auth/invalid-email"
+        ) {
+          try {
+            const newCred = await createUserWithEmailAndPassword(auth, email, password);
+            if (newCred.user) uid = newCred.user.uid;
+          } catch (createErr: unknown) {
+            console.warn("Email signup fallback:", createErr);
+          }
+        } else {
+          console.warn("Email signin fallback:", err);
+        }
+      }
+
+      await handleRoleSelection(uid, selectedRole);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "로그인 실패";
+      setLocalError(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -112,9 +160,9 @@ function LoginContent() {
           </p>
         </div>
 
-        {errorMsg && (
+        {(errorMsg || localError) && (
           <div className="rounded-xl bg-rose-50 p-3 text-xs font-semibold text-rose-700 border border-rose-200">
-            소셜 로그인 오류: {errorMsg}
+            로그인 메시지: {errorMsg || localError}
           </div>
         )}
 

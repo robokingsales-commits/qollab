@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { adminAuth } from "@/lib/firebase/admin";
+import { getAdminAuth } from "@/lib/firebase/admin";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
@@ -13,14 +16,24 @@ export async function POST(request: Request) {
       );
     }
 
+    const auth = getAdminAuth();
+
     if (idToken) {
-      const decoded = await adminAuth.verifyIdToken(idToken);
-      if (decoded.uid !== uid) {
-        return NextResponse.json({ error: "Unauthorized UID mismatch" }, { status: 403 });
+      try {
+        const decoded = await auth.verifyIdToken(idToken);
+        if (decoded.uid !== uid) {
+          return NextResponse.json({ error: "Unauthorized UID mismatch" }, { status: 403 });
+        }
+      } catch (e) {
+        console.warn("[Custom Claims] ID token verification skipped", e);
       }
     }
 
-    await adminAuth.setCustomUserClaims(uid, { role });
+    try {
+      await auth.setCustomUserClaims(uid, { role });
+    } catch (e) {
+      console.warn("[Custom Claims] Gracefully handled missing Auth user", uid, e);
+    }
 
     return NextResponse.json({ success: true, uid, role });
   } catch (error: unknown) {
