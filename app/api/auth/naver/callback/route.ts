@@ -57,34 +57,60 @@ export async function GET(request: Request) {
     }
 
     const naverProfile = userData.response;
+    const naverEmail = naverProfile.email || `${naverProfile.id}@naver.qollab.com`;
+    const naverName = naverProfile.name || naverProfile.nickname || "Naver User";
+    const naverProfileImage = naverProfile.profile_image || "";
     const uid = `naver:${naverProfile.id}`;
-    const email = naverProfile.email || `${naverProfile.id}@naver.qollab.com`;
-    const displayName = naverProfile.name || naverProfile.nickname || "네이버 사용자";
-    const photoURL = naverProfile.profile_image || "";
 
     const auth = getAdminAuth();
     const db = getAdminDb();
 
+    let firebaseUser;
     let isNewUser = false;
+
     try {
-      await auth.getUser(uid);
-      await auth.updateUser(uid, { displayName, email, photoURL });
-    } catch {
-      await auth.createUser({ uid, email, displayName, photoURL });
-      isNewUser = true;
+      firebaseUser = await auth.getUserByEmail(naverEmail);
+      await auth.updateUser(firebaseUser.uid, { displayName: naverName, photoURL: naverProfileImage });
+    } catch (e: unknown) {
+      const err = e as { code?: string };
+      if (err.code === "auth/user-not-found") {
+        try {
+          firebaseUser = await auth.getUser(uid);
+        } catch {
+          firebaseUser = await auth.createUser({
+            uid,
+            email: naverEmail,
+            displayName: naverName,
+            photoURL: naverProfileImage,
+          });
+          isNewUser = true;
+        }
+      } else {
+        try {
+          firebaseUser = await auth.getUser(uid);
+        } catch {
+          firebaseUser = await auth.createUser({
+            uid,
+            email: naverEmail,
+            displayName: naverName,
+            photoURL: naverProfileImage,
+          });
+          isNewUser = true;
+        }
+      }
     }
 
     // Upsert Firestore User Profile Document
-    const userDocRef = db.collection("users").doc(uid);
+    const userDocRef = db.collection("users").doc(firebaseUser.uid);
     const existingDoc = await userDocRef.get();
 
     if (!existingDoc.exists) {
       isNewUser = true;
       await userDocRef.set({
-        uid,
-        email,
-        displayName,
-        photoURL,
+        uid: firebaseUser.uid,
+        email: naverEmail,
+        displayName: naverName,
+        photoURL: naverProfileImage,
         role,
         termsAgreed: false,
         createdAt: new Date().toISOString(),
@@ -92,15 +118,15 @@ export async function GET(request: Request) {
       });
     } else {
       await userDocRef.update({
-        displayName,
-        email,
-        photoURL,
+        displayName: naverName,
+        email: naverEmail,
+        photoURL: naverProfileImage,
         updatedAt: new Date().toISOString(),
       });
     }
 
-    await auth.setCustomUserClaims(uid, { role });
-    const customToken = await auth.createCustomToken(uid, { role });
+    await auth.setCustomUserClaims(firebaseUser.uid, { role });
+    const customToken = await auth.createCustomToken(firebaseUser.uid, { role });
 
     const redirectTarget = new URL(isNewUser ? "/onboarding" : "/auth/login", request.url);
     redirectTarget.searchParams.set("customToken", customToken);
