@@ -1,15 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createRequire } from "module";
+import rawAdmin from "firebase-admin";
 
-const require = createRequire(import.meta.url);
+const admin: any = rawAdmin;
 
 let _adminApp: any = null;
 
 function getOrInitAdminApp(): any {
   if (_adminApp) return _adminApp;
 
-  const admin = require("firebase-admin");
-  const existingApps = admin.getApps ? admin.getApps() : [];
+  const existingApps = admin.apps || (rawAdmin as any).apps || [];
   if (existingApps.length > 0 && existingApps[0]) {
     _adminApp = existingApps[0];
     return _adminApp;
@@ -39,7 +38,7 @@ function getOrInitAdminApp(): any {
   if (projectId && clientEmail && privateKey && !privateKey.includes("your-private-key")) {
     try {
       _adminApp = admin.initializeApp({
-        credential: admin.cert({
+        credential: admin.credential.cert({
           projectId,
           clientEmail,
           privateKey,
@@ -58,20 +57,17 @@ function getOrInitAdminApp(): any {
 
 export function getAdminAuth(): any {
   const app = getOrInitAdminApp();
-  const { getAuth } = require("firebase-admin/auth");
-  return getAuth(app);
+  return admin.auth(app);
 }
 
 export function getAdminDb(): any {
   const app = getOrInitAdminApp();
-  const { getFirestore } = require("firebase-admin/firestore");
-  return getFirestore(app);
+  return admin.firestore(app);
 }
 
 export function getAdminStorage(): any {
   const app = getOrInitAdminApp();
-  const { getStorage } = require("firebase-admin/storage");
-  return getStorage(app);
+  return admin.storage(app);
 }
 
 export const adminApp: any = new Proxy({} as any, {
