@@ -11,11 +11,18 @@ export async function GET(request: Request) {
   const role = ["owner", "admin"].includes(state) ? state : "consumer";
 
   const clientId = process.env.NAVER_CLIENT_ID || process.env.NEXT_PUBLIC_NAVER_CLIENT_ID;
-  const clientSecret = process.env.NAVER_CLIENT_SECRET;
+  const clientSecret = process.env.NAVER_CLIENT_SECRET || process.env.NEXT_PUBLIC_NAVER_CLIENT_SECRET;
 
   if (!code || !clientId || !clientSecret) {
     return NextResponse.redirect(
-      new URL(`/auth/login?error=${encodeURIComponent("Missing authorization code or Naver credentials")}`, request.url)
+      new URL(
+        `/auth/login?error=${encodeURIComponent(
+          `Missing Naver credentials (clientId: ${clientId ? "present" : "missing"}, clientSecret: ${
+            clientSecret ? "present" : "missing"
+          })`
+        )}`,
+        request.url
+      )
     );
   }
 

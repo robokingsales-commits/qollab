@@ -24,9 +24,12 @@ export const loginWithGoogle = async () => {
 };
 
 export const loginWithGoogleRedirect = (role: string = "consumer") => {
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
-  const redirectUri = process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI || "https://qollab-gules.vercel.app/api/auth/callback/google";
-  
+  const clientId = process.env.GOOGLE_CLIENT_ID || process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  const redirectUri =
+    process.env.GOOGLE_REDIRECT_URI ||
+    process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URI ||
+    "https://qollab-gules.vercel.app/api/auth/callback/google";
+
   if (clientId && !clientId.includes("your-google-client-id")) {
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(
       redirectUri
@@ -38,8 +41,14 @@ export const loginWithGoogleRedirect = (role: string = "consumer") => {
 };
 
 export const loginWithKakao = (role: string = "consumer") => {
-  const clientId = process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || "f374580fccoee2e4f29fdd081d1e390b";
-  const redirectUri = process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI || "https://qollab-gules.vercel.app/api/auth/kakao/callback";
+  const clientId =
+    process.env.KAKAO_CLIENT_ID ||
+    process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID ||
+    "f374580fccoee2e4f29fdd081d1e390b";
+  const redirectUri =
+    process.env.KAKAO_REDIRECT_URI ||
+    process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI ||
+    "https://qollab-gules.vercel.app/api/auth/kakao/callback";
   const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
     redirectUri
   )}&response_type=code&state=${role}`;
@@ -47,8 +56,14 @@ export const loginWithKakao = (role: string = "consumer") => {
 };
 
 export const loginWithNaver = (role: string = "consumer") => {
-  const clientId = process.env.NEXT_PUBLIC_NAVER_CLIENT_ID || "xLpTMSCykwss_uaeOqgI";
-  const redirectUri = process.env.NEXT_PUBLIC_NAVER_REDIRECT_URI || "https://qollab-gules.vercel.app/api/auth/naver/callback";
+  const clientId =
+    process.env.NAVER_CLIENT_ID ||
+    process.env.NEXT_PUBLIC_NAVER_CLIENT_ID ||
+    "xLpTMSCykwss_uaeOqgI";
+  const redirectUri =
+    process.env.NAVER_REDIRECT_URI ||
+    process.env.NEXT_PUBLIC_NAVER_REDIRECT_URI ||
+    "https://qollab-gules.vercel.app/api/auth/naver/callback";
   const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(
     redirectUri
   )}&state=${role}`;
