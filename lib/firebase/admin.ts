@@ -1,16 +1,20 @@
-import { initializeApp, getApps, cert, App } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
-import { getFirestore } from "firebase-admin/firestore";
-import { getStorage } from "firebase-admin/storage";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import adminModule from "firebase-admin";
 
-function initAdminApp(): App {
-  if (getApps().length > 0 && getApps()[0]) {
-    return getApps()[0];
+const admin: any = (adminModule as any).default || adminModule;
+
+function initAdminApp(): any {
+  const apps = admin.apps || (adminModule as any).apps || [];
+  if (apps && apps.length > 0 && apps[0]) {
+    return apps[0];
   }
 
   const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY
     ? process.env.FIREBASE_ADMIN_PRIVATE_KEY.replace(/\\n/g, "\n")
     : undefined;
+
+  const initialize = admin.initializeApp || (adminModule as any).initializeApp;
+  const certFn = (admin.credential && admin.credential.cert) || (adminModule as any).cert;
 
   if (
     process.env.FIREBASE_ADMIN_PROJECT_ID &&
@@ -19,8 +23,8 @@ function initAdminApp(): App {
     !privateKey.includes("your-private-key")
   ) {
     try {
-      return initializeApp({
-        credential: cert({
+      return initialize({
+        credential: certFn({
           projectId: process.env.FIREBASE_ADMIN_PROJECT_ID,
           clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
           privateKey,
@@ -32,14 +36,19 @@ function initAdminApp(): App {
     }
   }
 
-  return initializeApp({
+  return initialize({
     projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "demo-project",
   });
 }
 
-const adminApp: App = initAdminApp();
-const adminAuth = getAuth(adminApp);
-const adminDb = getFirestore(adminApp);
-const adminStorage = getStorage(adminApp);
+const adminApp: any = initAdminApp();
+
+const authFn = admin.auth || (adminModule as any).auth;
+const firestoreFn = admin.firestore || (adminModule as any).firestore;
+const storageFn = admin.storage || (adminModule as any).storage;
+
+const adminAuth: any = authFn ? authFn(adminApp) : null;
+const adminDb: any = firestoreFn ? firestoreFn(adminApp) : null;
+const adminStorage: any = storageFn ? storageFn(adminApp) : null;
 
 export { adminApp, adminAuth, adminDb, adminStorage };
