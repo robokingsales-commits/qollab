@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { initializeApp, getApps, cert, App } from "firebase-admin/app";
-import { getAuth, Auth } from "firebase-admin/auth";
-import { getFirestore, Firestore } from "firebase-admin/firestore";
-import { getStorage, Storage } from "firebase-admin/storage";
+import { createRequire } from "module";
 
-let _adminApp: App | null = null;
+const require = createRequire(import.meta.url);
 
-function getOrInitAdminApp(): App {
+let _adminApp: any = null;
+
+function getOrInitAdminApp(): any {
   if (_adminApp) return _adminApp;
 
-  const existingApps = getApps();
+  const admin = require("firebase-admin");
+  const existingApps = admin.getApps ? admin.getApps() : [];
   if (existingApps.length > 0 && existingApps[0]) {
     _adminApp = existingApps[0];
     return _adminApp;
@@ -38,8 +38,8 @@ function getOrInitAdminApp(): App {
 
   if (projectId && clientEmail && privateKey && !privateKey.includes("your-private-key")) {
     try {
-      _adminApp = initializeApp({
-        credential: cert({
+      _adminApp = admin.initializeApp({
+        credential: admin.cert({
           projectId,
           clientEmail,
           privateKey,
@@ -52,44 +52,47 @@ function getOrInitAdminApp(): App {
     }
   }
 
-  _adminApp = initializeApp({ projectId });
+  _adminApp = admin.initializeApp({ projectId });
   return _adminApp;
 }
 
-export function getAdminAuth(): Auth {
+export function getAdminAuth(): any {
   const app = getOrInitAdminApp();
+  const { getAuth } = require("firebase-admin/auth");
   return getAuth(app);
 }
 
-export function getAdminDb(): Firestore {
+export function getAdminDb(): any {
   const app = getOrInitAdminApp();
+  const { getFirestore } = require("firebase-admin/firestore");
   return getFirestore(app);
 }
 
-export function getAdminStorage(): Storage {
+export function getAdminStorage(): any {
   const app = getOrInitAdminApp();
+  const { getStorage } = require("firebase-admin/storage");
   return getStorage(app);
 }
 
-export const adminApp: App = new Proxy({} as App, {
+export const adminApp: any = new Proxy({} as any, {
   get(_, prop) {
     return (getOrInitAdminApp() as any)[prop];
   },
 });
 
-export const adminAuth: Auth = new Proxy({} as Auth, {
+export const adminAuth: any = new Proxy({} as any, {
   get(_, prop) {
     return (getAdminAuth() as any)[prop];
   },
 });
 
-export const adminDb: Firestore = new Proxy({} as Firestore, {
+export const adminDb: any = new Proxy({} as any, {
   get(_, prop) {
     return (getAdminDb() as any)[prop];
   },
 });
 
-export const adminStorage: Storage = new Proxy({} as Storage, {
+export const adminStorage: any = new Proxy({} as any, {
   get(_, prop) {
     return (getAdminStorage() as any)[prop];
   },
