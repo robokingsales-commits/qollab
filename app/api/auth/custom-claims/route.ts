@@ -16,9 +16,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const auth = getAdminAuth();
+    const auth = await getAdminAuth();
 
-    if (idToken) {
+    if (idToken && auth) {
       try {
         const decoded = await auth.verifyIdToken(idToken);
         if (decoded.uid !== uid) {
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     }
 
     try {
-      await auth.setCustomUserClaims(uid, { role });
+      if (auth) await auth.setCustomUserClaims(uid, { role });
     } catch (e) {
       console.warn("[Custom Claims] Gracefully handled missing Auth user", uid, e);
     }

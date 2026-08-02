@@ -68,8 +68,8 @@ export async function GET(request: Request) {
 
     // Attempt Firebase Admin operations with fail-safe try-catch
     try {
-      const auth = getAdminAuth();
-      const db = getAdminDb();
+      const auth = await getAdminAuth();
+      const db = await getAdminDb();
 
       let firebaseUser;
       try {

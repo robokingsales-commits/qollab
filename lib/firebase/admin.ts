@@ -1,76 +1,100 @@
-import { initializeApp, getApps, cert, App } from "firebase-admin/app";
-import { getAuth, Auth } from "firebase-admin/auth";
-import { getFirestore, Firestore } from "firebase-admin/firestore";
-import { getStorage, Storage } from "firebase-admin/storage";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-let _adminApp: App | null = null;
+let _adminApp: any = null;
 
-function getOrInitAdminApp(): App {
+async function getOrInitAdminApp(): Promise<any> {
   if (_adminApp) return _adminApp;
 
-  const existingApps = getApps();
-  if (existingApps.length > 0 && existingApps[0]) {
-    _adminApp = existingApps[0];
-    return _adminApp;
-  }
+  try {
+    const { initializeApp, getApps, cert } = await import("firebase-admin/app");
 
-  const projectId =
-    process.env.FIREBASE_ADMIN_PROJECT_ID ||
-    process.env.FIREBASE_PROJECT_ID ||
-    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
-    "qollab-e5316";
-
-  const clientEmail =
-    process.env.FIREBASE_ADMIN_CLIENT_EMAIL ||
-    process.env.FIREBASE_CLIENT_EMAIL;
-
-  let privateKey =
-    process.env.FIREBASE_ADMIN_PRIVATE_KEY ||
-    process.env.FIREBASE_PRIVATE_KEY;
-
-  if (privateKey) {
-    privateKey = privateKey.replace(/\\n/g, "\n");
-    if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
-      privateKey = privateKey.slice(1, -1);
-    }
-  }
-
-  if (projectId && clientEmail && privateKey && !privateKey.includes("your-private-key")) {
-    try {
-      _adminApp = initializeApp({
-        credential: cert({
-          projectId,
-          clientEmail,
-          privateKey,
-        }),
-        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || `${projectId}.firebasestorage.app`,
-      });
+    const existingApps = getApps();
+    if (existingApps.length > 0 && existingApps[0]) {
+      _adminApp = existingApps[0];
       return _adminApp;
-    } catch (e) {
-      console.warn("[Firebase Admin] Cert init failed, using fallback:", e);
     }
+
+    const projectId =
+      process.env.FIREBASE_ADMIN_PROJECT_ID ||
+      process.env.FIREBASE_PROJECT_ID ||
+      process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
+      "qollab-e5316";
+
+    const clientEmail =
+      process.env.FIREBASE_ADMIN_CLIENT_EMAIL ||
+      process.env.FIREBASE_CLIENT_EMAIL;
+
+    let privateKey =
+      process.env.FIREBASE_ADMIN_PRIVATE_KEY ||
+      process.env.FIREBASE_PRIVATE_KEY;
+
+    if (privateKey) {
+      privateKey = privateKey.replace(/\\n/g, "\n");
+      if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+        privateKey = privateKey.slice(1, -1);
+      }
+    }
+
+    if (projectId && clientEmail && privateKey && !privateKey.includes("your-private-key")) {
+      try {
+        _adminApp = initializeApp({
+          credential: cert({
+            projectId,
+            clientEmail,
+            privateKey,
+          }),
+          storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || `${projectId}.firebasestorage.app`,
+        });
+        return _adminApp;
+      } catch (e) {
+        console.warn("[Firebase Admin] Cert init failed, using fallback:", e);
+      }
+    }
+
+    _adminApp = initializeApp({ projectId });
+    return _adminApp;
+  } catch (err) {
+    console.error("[Firebase Admin Load Error]", err);
+    return null;
   }
-
-  _adminApp = initializeApp({ projectId });
-  return _adminApp;
 }
 
-export function getAdminAuth(): Auth {
-  const app = getOrInitAdminApp();
-  return getAuth(app);
+export async function getAdminAuth(): Promise<any> {
+  const app = await getOrInitAdminApp();
+  if (!app) return null;
+  try {
+    const { getAuth } = await import("firebase-admin/auth");
+    return getAuth(app);
+  } catch (e) {
+    console.warn("[Firebase Admin Auth Load Failed]", e);
+    return null;
+  }
 }
 
-export function getAdminDb(): Firestore {
-  const app = getOrInitAdminApp();
-  return getFirestore(app);
+export async function getAdminDb(): Promise<any> {
+  const app = await getOrInitAdminApp();
+  if (!app) return null;
+  try {
+    const { getFirestore } = await import("firebase-admin/firestore");
+    return getFirestore(app);
+  } catch (e) {
+    console.warn("[Firebase Admin Db Load Failed]", e);
+    return null;
+  }
 }
 
-export function getAdminStorage(): Storage {
-  const app = getOrInitAdminApp();
-  return getStorage(app);
+export async function getAdminStorage(): Promise<any> {
+  const app = await getOrInitAdminApp();
+  if (!app) return null;
+  try {
+    const { getStorage } = await import("firebase-admin/storage");
+    return getStorage(app);
+  } catch (e) {
+    console.warn("[Firebase Admin Storage Load Failed]", e);
+    return null;
+  }
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export const adminApp: any = new Proxy({} as any, {
   get(_, prop) {
     return (getOrInitAdminApp() as any)[prop];
