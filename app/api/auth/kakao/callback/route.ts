@@ -20,6 +20,8 @@ export async function GET(request: Request) {
     process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI ||
     `${requestUrl.origin}/api/auth/kakao/callback`;
 
+  const clientSecret = process.env.KAKAO_CLIENT_SECRET || "KKPBE4RPpwHQ0kjxUphXvGFksrphGVjr";
+
   if (!code) {
     const errorUrl = new URL("/auth/login", requestUrl.origin);
     errorUrl.searchParams.set("error", "Missing authorization code");
@@ -30,6 +32,7 @@ export async function GET(request: Request) {
     const tokenParams = new URLSearchParams({
       grant_type: "authorization_code",
       client_id: clientId,
+      client_secret: clientSecret,
       redirect_uri: redirectUri,
       code,
     });
