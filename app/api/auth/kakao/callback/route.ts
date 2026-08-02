@@ -87,19 +87,22 @@ export async function GET(request: Request) {
 
         const userDocRef = db.collection("users").doc(uid);
         const existingDoc = await userDocRef.get();
+        const existingData = existingDoc.exists ? existingDoc.data() : null;
 
-        if (!existingDoc.exists) {
+        if (!existingDoc.exists || !existingData?.termsAgreed) {
           isNewUser = true;
-          await userDocRef.set({
-            uid,
-            email,
-            displayName,
-            photoURL,
-            role,
-            termsAgreed: false,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          });
+          if (!existingDoc.exists) {
+            await userDocRef.set({
+              uid,
+              email,
+              displayName,
+              photoURL,
+              role,
+              termsAgreed: false,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            });
+          }
         } else {
           await userDocRef.update({
             displayName,
@@ -113,9 +116,17 @@ export async function GET(request: Request) {
         customToken = await auth.createCustomToken(uid, { role });
       } else {
         customToken = `mock_kakao_token_${Date.now()}_${uid}`;
+        const cookiesHeader = request.headers.get("cookie") || "";
+        if (!cookiesHeader.includes("qollab_terms_agreed=true")) {
+          isNewUser = true;
+        }
       }
     } catch {
       customToken = `mock_kakao_token_${Date.now()}_${uid}`;
+      const cookiesHeader = request.headers.get("cookie") || "";
+      if (!cookiesHeader.includes("qollab_terms_agreed=true")) {
+        isNewUser = true;
+      }
     }
 
     const redirectTarget = new URL(isNewUser ? "/onboarding" : "/auth/login", requestUrl.origin);

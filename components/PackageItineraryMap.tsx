@@ -4,17 +4,63 @@ import { StoreDocument } from "@/lib/types/schema";
 import { Navigation, Footprints, MapPin } from "lucide-react";
 
 export interface PackageItineraryMapProps {
-  stores: {
+  stores?: {
     store: StoreDocument;
     slotRole: "anchor" | "rider";
     orderIndex: number;
     travelTimeFromPrev?: string;
   }[];
+  waypoints?: {
+    lat: number;
+    lng: number;
+    title: string;
+    subtitle: string;
+  }[];
+  className?: string;
 }
 
-export default function PackageItineraryMap({ stores }: PackageItineraryMapProps) {
+export default function PackageItineraryMap({ stores, waypoints, className }: PackageItineraryMapProps) {
+  if (waypoints && waypoints.length > 0) {
+    return (
+      <div className={`rounded-2xl bg-slate-900 p-6 text-white space-y-6 shadow-xl border border-slate-800 ${className || ""}`}>
+        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+          <div className="flex items-center space-x-2">
+            <Navigation className="h-5 w-5 text-emerald-400" />
+            <h3 className="font-bold text-lg text-white">동네 지도 인터랙티브 패키지 핀</h3>
+          </div>
+          <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-300 border border-emerald-500/30">
+            GPS 위치 인식 맵
+          </span>
+        </div>
+
+        <div className="relative rounded-xl bg-slate-950 p-6 border border-slate-800 overflow-hidden min-h-[220px]">
+          <div className="absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none" />
+
+          <div className="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {waypoints.map((wp, idx) => (
+              <div key={idx} className="rounded-2xl bg-slate-900 p-4 border border-slate-800 flex items-start space-x-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-600 font-extrabold text-white text-xs shrink-0">
+                  #{idx + 1}
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-sm text-slate-100">{wp.title}</h4>
+                  <p className="text-xs text-emerald-400 mt-1">{wp.subtitle}</p>
+                  <p className="text-[10px] text-slate-500 mt-0.5 font-mono">
+                    위도: {wp.lat} / 경도: {wp.lng}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const storeList = stores || [];
+
   return (
-    <div className="rounded-2xl bg-slate-900 p-6 text-white space-y-6 shadow-xl border border-slate-800">
+    <div className={`rounded-2xl bg-slate-900 p-6 text-white space-y-6 shadow-xl border border-slate-800 ${className || ""}`}>
       <div className="flex items-center justify-between border-b border-slate-800 pb-4">
         <div className="flex items-center space-x-2">
           <Navigation className="h-5 w-5 text-indigo-400" />
@@ -29,7 +75,7 @@ export default function PackageItineraryMap({ stores }: PackageItineraryMapProps
         <div className="absolute inset-0 bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          {stores.map((item, idx) => (
+          {storeList.map((item, idx) => (
             <div key={item.store.storeId} className="flex-1 w-full">
               <div className="flex flex-col items-center text-center space-y-3">
                 <div className="relative">
@@ -59,12 +105,12 @@ export default function PackageItineraryMap({ stores }: PackageItineraryMapProps
                 </div>
               </div>
 
-              {idx < stores.length - 1 && (
+              {idx < storeList.length - 1 && (
                 <div className="my-4 md:my-0 md:absolute md:top-1/2 md:translate-y-[-50%] flex md:flex-col items-center justify-center text-xs text-indigo-300 font-semibold space-x-1 md:space-x-0 space-y-1">
                   <div className="hidden md:block w-16 h-0.5 bg-gradient-to-r from-indigo-500 to-amber-500 my-2" />
                   <div className="flex items-center space-x-1 bg-slate-800/80 px-2.5 py-1 rounded-full border border-slate-700">
                     <Footprints className="h-3 w-3 text-amber-400" />
-                    <span>{stores[idx + 1].travelTimeFromPrev || "도보 5분 (320m)"}</span>
+                    <span>{storeList[idx + 1].travelTimeFromPrev || "도보 5분 (320m)"}</span>
                   </div>
                 </div>
               )}
@@ -78,7 +124,7 @@ export default function PackageItineraryMap({ stores }: PackageItineraryMapProps
           추천 이용 순서 & 시간 동선
         </h4>
         <div className="space-y-2">
-          {stores.map((item) => (
+          {storeList.map((item) => (
             <div
               key={item.store.storeId}
               className="flex items-center justify-between rounded-xl bg-slate-800/60 p-3 text-xs border border-slate-700/50"
