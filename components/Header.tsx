@@ -22,7 +22,9 @@ import {
   ArrowRightLeft, 
   Network,
   Headphones,
-  Settings
+  Settings,
+  ChevronRight,
+  Menu
 } from "lucide-react";
 import { auth } from "@/lib/firebase/client";
 import { onAuthStateChanged, signOut, User as FirebaseUser } from "firebase/auth";
@@ -44,7 +46,8 @@ export default function Header({ initialMode = "consumer" }: HeaderProps) {
   // Dropdown states
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [signupMenuOpen, setSignupMenuOpen] = useState(false);
-  const [activeNavDropdown, setActiveNavDropdown] = useState<string | null>(null);
+  const [consumerMainMenuOpen, setConsumerMainMenuOpen] = useState(false);
+  const [bizMainMenuOpen, setBizMainMenuOpen] = useState(false);
   const [menuTreeModalOpen, setMenuTreeModalOpen] = useState(false);
 
   useEffect(() => {
@@ -131,7 +134,7 @@ export default function Header({ initialMode = "consumer" }: HeaderProps) {
                       가입 및 회원 전환
                     </div>
                     <Link
-                      href="/auth/login?tab=signup"
+                      href="/auth/login"
                       className="block rounded-xl px-3 py-2 hover:bg-emerald-50 text-gray-800 font-semibold"
                     >
                       • 개인회원 / BIZ 회원 가입
@@ -190,7 +193,7 @@ export default function Header({ initialMode = "consumer" }: HeaderProps) {
           </div>
 
           {/* AI Search Bar */}
-          <div className="hidden flex-1 max-w-md mx-6 md:block">
+          <div className="hidden flex-1 max-w-xs lg:max-w-md mx-4 md:block">
             <form onSubmit={handleSearchSubmit} className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <input
@@ -208,252 +211,191 @@ export default function Header({ initialMode = "consumer" }: HeaderProps) {
           </div>
 
           {/* Navigation Links based on Mode */}
-          <div className="flex items-center space-x-5 text-xs font-medium text-gray-700">
+          <div className="flex items-center space-x-4 text-xs font-medium text-gray-700">
             {mode === "consumer" ? (
-              <>
-                {/* 1. 추천 패키지 */}
-                <div 
-                  className="relative"
-                  onMouseEnter={() => setActiveNavDropdown("recommend")}
-                  onMouseLeave={() => setActiveNavDropdown(null)}
+              /* --- 개인회원 모드 메인 메뉴 --- */
+              <div 
+                className="relative"
+                onMouseEnter={() => setConsumerMainMenuOpen(true)}
+                onMouseLeave={() => setConsumerMainMenuOpen(false)}
+              >
+                <button
+                  className="flex items-center space-x-1.5 rounded-2xl bg-indigo-50 hover:bg-indigo-100 px-3.5 py-2 text-xs font-extrabold text-indigo-700 border border-indigo-200 shadow-sm transition"
                 >
-                  <Link 
-                    href="/packages" 
-                    className="flex items-center space-x-1 hover:text-indigo-600 font-bold py-2"
-                  >
-                    <ShoppingBag className="h-3.5 w-3.5 text-indigo-600" />
-                    <span>추천 패키지</span>
-                    <ChevronDown className="h-3 w-3 text-gray-400" />
-                  </Link>
+                  <Menu className="h-4 w-4 text-indigo-600" />
+                  <span>개인회원 모드 메인 메뉴</span>
+                  <ChevronDown className="h-3.5 w-3.5 text-indigo-400" />
+                </button>
 
-                  {activeNavDropdown === "recommend" && (
-                    <div className="absolute left-0 mt-0 w-52 rounded-2xl bg-white p-2 shadow-2xl border border-gray-100 space-y-1 z-50">
-                      <Link
-                        href="/packages?category=local"
-                        className="block rounded-xl px-3 py-2 hover:bg-indigo-50 font-semibold text-gray-800"
-                      >
-                        • 우리 동네 패키지
-                      </Link>
-                      <Link
-                        href="/packages?category=brand"
-                        className="block rounded-xl px-3 py-2 hover:bg-indigo-50 font-semibold text-gray-800"
-                      >
-                        • 브랜드 패키지 (전국 구매)
-                      </Link>
+                {/* Mega Dropdown containing the 4 submenus */}
+                {consumerMainMenuOpen && (
+                  <div className="absolute right-0 sm:left-0 mt-1 w-[580px] rounded-3xl bg-white p-4 shadow-2xl border border-gray-200 z-50 grid grid-cols-2 gap-3 text-xs">
+                    {/* 1. 추천 패키지 */}
+                    <div className="rounded-2xl bg-gray-50 p-3.5 border border-gray-100 space-y-2 hover:border-indigo-300 transition">
+                      <div className="flex items-center space-x-2 text-indigo-600 font-extrabold">
+                        <ShoppingBag className="h-4 w-4" />
+                        <span>추천 패키지</span>
+                      </div>
+                      <div className="space-y-1 pl-1">
+                        <Link
+                          href="/packages?category=local"
+                          className="block text-gray-700 hover:text-indigo-600 font-semibold py-0.5 flex items-center justify-between"
+                        >
+                          <span>• 우리 동네 패키지</span>
+                          <ChevronRight className="h-3 w-3 text-gray-400" />
+                        </Link>
+                        <Link
+                          href="/packages?category=brand"
+                          className="block text-gray-700 hover:text-indigo-600 font-semibold py-0.5 flex items-center justify-between"
+                        >
+                          <span>• 브랜드 패키지 (전국 구매)</span>
+                          <ChevronRight className="h-3 w-3 text-gray-400" />
+                        </Link>
+                      </div>
                     </div>
-                  )}
-                </div>
 
-                {/* 2. 마이 패키지 */}
-                <div 
-                  className="relative"
-                  onMouseEnter={() => setActiveNavDropdown("mypackage")}
-                  onMouseLeave={() => setActiveNavDropdown(null)}
-                >
-                  <Link 
-                    href="/my-vouchers" 
-                    className="flex items-center space-x-1 hover:text-indigo-600 font-bold py-2 text-indigo-600"
-                  >
-                    <Ticket className="h-3.5 w-3.5" />
-                    <span>마이 패키지</span>
-                    <ChevronDown className="h-3 w-3 text-indigo-400" />
-                  </Link>
-
-                  {activeNavDropdown === "mypackage" && (
-                    <div className="absolute left-0 mt-0 w-60 rounded-2xl bg-white p-2 shadow-2xl border border-gray-100 space-y-1 z-50">
-                      <Link
-                        href="/my-vouchers?type=single"
-                        className="block rounded-xl px-3 py-2 hover:bg-indigo-50 font-semibold text-gray-800"
-                      >
-                        • QR/바코드 교환권
-                      </Link>
-                      <Link
-                        href="/my-vouchers?type=collab"
-                        className="block rounded-xl px-3 py-2 hover:bg-indigo-50 font-semibold text-gray-800"
-                      >
-                        • QR/바코드: (동네) 다중 매장 콜라보
-                      </Link>
+                    {/* 2. 마이 패키지 */}
+                    <div className="rounded-2xl bg-gray-50 p-3.5 border border-gray-100 space-y-2 hover:border-indigo-300 transition">
+                      <div className="flex items-center space-x-2 text-indigo-600 font-extrabold">
+                        <Ticket className="h-4 w-4" />
+                        <span>마이 패키지</span>
+                      </div>
+                      <div className="space-y-1 pl-1">
+                        <Link
+                          href="/my-vouchers?type=single"
+                          className="block text-gray-700 hover:text-indigo-600 font-semibold py-0.5 flex items-center justify-between"
+                        >
+                          <span>• QR/바코드 교환권</span>
+                          <ChevronRight className="h-3 w-3 text-gray-400" />
+                        </Link>
+                        <Link
+                          href="/my-vouchers?type=collab"
+                          className="block text-gray-700 hover:text-indigo-600 font-semibold py-0.5 flex items-center justify-between"
+                        >
+                          <span>• (동네) 다중 매장 콜라보</span>
+                          <ChevronRight className="h-3 w-3 text-gray-400" />
+                        </Link>
+                      </div>
                     </div>
-                  )}
-                </div>
 
-                {/* 3. 동네지도 */}
-                <div 
-                  className="relative"
-                  onMouseEnter={() => setActiveNavDropdown("map")}
-                  onMouseLeave={() => setActiveNavDropdown(null)}
-                >
-                  <Link 
-                    href="/map" 
-                    className="flex items-center space-x-1 hover:text-emerald-600 font-bold py-2"
-                  >
-                    <MapPin className="h-3.5 w-3.5 text-emerald-600" />
-                    <span>동네지도</span>
-                    <ChevronDown className="h-3 w-3 text-gray-400" />
-                  </Link>
-
-                  {activeNavDropdown === "map" && (
-                    <div className="absolute left-0 mt-0 w-56 rounded-2xl bg-white p-2 shadow-2xl border border-gray-100 space-y-1 z-50">
-                      <Link
-                        href="/map?preset=home_work"
-                        className="block rounded-xl px-3 py-2 hover:bg-emerald-50 font-semibold text-gray-800"
-                      >
-                        • 집 / 회사 동네 패키지
-                      </Link>
-                      <Link
-                        href="/map?preset=current"
-                        className="block rounded-xl px-3 py-2 hover:bg-emerald-50 font-semibold text-gray-800"
-                      >
-                        • 현재 위치 기반 지도
-                      </Link>
+                    {/* 3. 동네지도 */}
+                    <div className="rounded-2xl bg-gray-50 p-3.5 border border-gray-100 space-y-2 hover:border-emerald-300 transition">
+                      <div className="flex items-center space-x-2 text-emerald-600 font-extrabold">
+                        <MapPin className="h-4 w-4" />
+                        <span>동네지도</span>
+                      </div>
+                      <div className="space-y-1 pl-1">
+                        <Link
+                          href="/map?preset=home_work"
+                          className="block text-gray-700 hover:text-emerald-600 font-semibold py-0.5 flex items-center justify-between"
+                        >
+                          <span>• 집 / 회사 동네 패키지</span>
+                          <ChevronRight className="h-3 w-3 text-gray-400" />
+                        </Link>
+                        <Link
+                          href="/map?preset=current"
+                          className="block text-gray-700 hover:text-emerald-600 font-semibold py-0.5 flex items-center justify-between"
+                        >
+                          <span>• 현재 위치 기반 지도</span>
+                          <ChevronRight className="h-3 w-3 text-gray-400" />
+                        </Link>
+                      </div>
                     </div>
-                  )}
-                </div>
 
-                {/* 4. 마이페이지 */}
-                <div 
-                  className="relative"
-                  onMouseEnter={() => setActiveNavDropdown("mypage")}
-                  onMouseLeave={() => setActiveNavDropdown(null)}
-                >
-                  <Link 
-                    href="/mypage" 
-                    className="flex items-center space-x-1 hover:text-purple-600 font-bold py-2"
-                  >
-                    <User className="h-3.5 w-3.5 text-purple-600" />
-                    <span>마이페이지</span>
-                    <ChevronDown className="h-3 w-3 text-gray-400" />
-                  </Link>
-
-                  {activeNavDropdown === "mypage" && (
-                    <div className="absolute right-0 mt-0 w-64 rounded-2xl bg-white p-2 shadow-2xl border border-gray-100 space-y-1 z-50 max-h-80 overflow-y-auto">
-                      <Link href="/mypage?tab=orders" className="block rounded-xl px-3 py-1.5 hover:bg-purple-50 text-gray-800">
-                        • 구매내역
-                      </Link>
-                      <Link href="/mypage?tab=payments" className="block rounded-xl px-3 py-1.5 hover:bg-purple-50 text-gray-800">
-                        • 결제수단 등록
-                      </Link>
-                      <Link href="/mypage?tab=returns" className="block rounded-xl px-3 py-1.5 hover:bg-purple-50 text-gray-800">
-                        • 취소/반품/교환 내역
-                      </Link>
-                      <Link href="/mypage?tab=reviews" className="block rounded-xl px-3 py-1.5 hover:bg-purple-50 text-gray-800">
-                        • 상품리뷰
-                      </Link>
-                      <Link href="/mypage?tab=profile" className="block rounded-xl px-3 py-1.5 hover:bg-purple-50 text-gray-800">
-                        • 프로필 관리
-                      </Link>
-                      <Link href="/mypage?tab=favorites" className="block rounded-xl px-3 py-1.5 hover:bg-purple-50 text-gray-800">
-                        • 즐겨찾기 알림 (영화, 미용실 등)
-                      </Link>
-                      <Link href="/mypage?tab=points" className="block rounded-xl px-3 py-1.5 hover:bg-purple-50 text-gray-800">
-                        • 포인트
-                      </Link>
-                      <Link href="/mypage?tab=shipping" className="block rounded-xl px-3 py-1.5 hover:bg-purple-50 text-gray-800">
-                        • 배송주소지 설정
-                      </Link>
-                      <Link href="/mypage?tab=account" className="block rounded-xl px-3 py-1.5 hover:bg-purple-50 text-gray-800">
-                        • 계정 정보 변경
-                      </Link>
-                      <button onClick={handleLogout} className="w-full text-left rounded-xl px-3 py-1.5 hover:bg-rose-50 text-rose-600 font-bold">
-                        • 로그아웃
-                      </button>
+                    {/* 4. 마이페이지 */}
+                    <div className="rounded-2xl bg-gray-50 p-3.5 border border-gray-100 space-y-2 hover:border-purple-300 transition">
+                      <div className="flex items-center space-x-2 text-purple-600 font-extrabold">
+                        <User className="h-4 w-4" />
+                        <span>마이페이지</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1 text-[11px] text-gray-700 font-semibold">
+                        <Link href="/mypage?tab=orders" className="hover:text-purple-600 py-0.5">• 구매내역</Link>
+                        <Link href="/mypage?tab=payments" className="hover:text-purple-600 py-0.5">• 결제수단</Link>
+                        <Link href="/mypage?tab=returns" className="hover:text-purple-600 py-0.5">• 취소/반품</Link>
+                        <Link href="/mypage?tab=reviews" className="hover:text-purple-600 py-0.5">• 상품리뷰</Link>
+                        <Link href="/mypage?tab=profile" className="hover:text-purple-600 py-0.5">• 프로필관리</Link>
+                        <Link href="/mypage?tab=favorites" className="hover:text-purple-600 py-0.5">• 즐겨찾기</Link>
+                        <Link href="/mypage?tab=points" className="hover:text-purple-600 py-0.5">• 포인트</Link>
+                        <Link href="/mypage?tab=account" className="hover:text-purple-600 py-0.5">• 계정변경</Link>
+                      </div>
                     </div>
-                  )}
-                </div>
-              </>
+                  </div>
+                )}
+              </div>
             ) : (
-              /* BIZ 회원 모드 메뉴 */
-              <>
-                {/* 1. 대쉬보드 */}
-                <Link
-                  href="/owner/dashboard"
-                  className="flex items-center space-x-1 hover:text-amber-600 font-bold py-2 text-amber-700"
+              /* --- BIZ회원 모드 메인 메뉴 --- */
+              <div 
+                className="relative"
+                onMouseEnter={() => setBizMainMenuOpen(true)}
+                onMouseLeave={() => setBizMainMenuOpen(false)}
+              >
+                <button
+                  className="flex items-center space-x-1.5 rounded-2xl bg-amber-50 hover:bg-amber-100 px-3.5 py-2 text-xs font-extrabold text-amber-800 border border-amber-200 shadow-sm transition"
                 >
-                  <LayoutDashboard className="h-3.5 w-3.5" />
-                  <span>대쉬보드</span>
-                </Link>
+                  <Menu className="h-4 w-4 text-amber-600" />
+                  <span>BIZ회원 모드 메인 메뉴</span>
+                  <ChevronDown className="h-3.5 w-3.5 text-amber-500" />
+                </button>
 
-                {/* 2. 패키지 센터 */}
-                <div 
-                  className="relative"
-                  onMouseEnter={() => setActiveNavDropdown("biz_packages")}
-                  onMouseLeave={() => setActiveNavDropdown(null)}
-                >
-                  <Link 
-                    href="/owner/packages" 
-                    className="flex items-center space-x-1 hover:text-amber-600 font-bold py-2"
-                  >
-                    <Boxes className="h-3.5 w-3.5 text-amber-600" />
-                    <span>패키지 센터</span>
-                    <ChevronDown className="h-3 w-3 text-gray-400" />
-                  </Link>
-
-                  {activeNavDropdown === "biz_packages" && (
-                    <div className="absolute left-0 mt-0 w-64 rounded-2xl bg-white p-2 shadow-2xl border border-gray-100 space-y-1 z-50">
-                      <Link href="/owner/packages/new" className="block rounded-xl px-3 py-2 hover:bg-amber-50 font-semibold text-gray-800">
-                        • 패키지 생성 (AI추천/자체/직접콜라보)
+                {/* Mega Dropdown containing the 6 BIZ submenus */}
+                {bizMainMenuOpen && (
+                  <div className="absolute right-0 sm:left-0 mt-1 w-[580px] rounded-3xl bg-white p-4 shadow-2xl border border-gray-200 z-50 grid grid-cols-2 gap-3 text-xs">
+                    {/* 1. 대쉬보드 */}
+                    <div className="rounded-2xl bg-amber-50/50 p-3 border border-amber-100 space-y-1">
+                      <Link href="/owner/dashboard" className="flex items-center space-x-2 text-amber-800 font-extrabold hover:underline">
+                        <LayoutDashboard className="h-4 w-4" />
+                        <span>대쉬보드 (상단 고정)</span>
                       </Link>
-                      <Link href="/owner/packages" className="block rounded-xl px-3 py-2 hover:bg-amber-50 font-semibold text-gray-800">
-                        • 생성된 패키지 관리 & 통계 분석
-                      </Link>
+                      <p className="text-[11px] text-gray-500">내 매장 상태, 실시간 매출, 수락 대기 알림</p>
                     </div>
-                  )}
-                </div>
 
-                {/* 3. 정산 */}
-                <div 
-                  className="relative"
-                  onMouseEnter={() => setActiveNavDropdown("biz_settlements")}
-                  onMouseLeave={() => setActiveNavDropdown(null)}
-                >
-                  <Link 
-                    href="/owner/settlements" 
-                    className="flex items-center space-x-1 hover:text-amber-600 font-bold py-2"
-                  >
-                    <PieChart className="h-3.5 w-3.5 text-amber-600" />
-                    <span>정산</span>
-                    <ChevronDown className="h-3 w-3 text-gray-400" />
-                  </Link>
-
-                  {activeNavDropdown === "biz_settlements" && (
-                    <div className="absolute left-0 mt-0 w-60 rounded-2xl bg-white p-2 shadow-2xl border border-gray-100 space-y-1 z-50">
-                      <Link href="/owner/settlements?type=single" className="block rounded-xl px-3 py-2 hover:bg-amber-50 font-semibold text-gray-800">
-                        • 단일 매장 자체 패키지 정산
+                    {/* 2. 패키지 센터 */}
+                    <div className="rounded-2xl bg-gray-50 p-3 border border-gray-100 space-y-1">
+                      <Link href="/owner/packages" className="flex items-center space-x-2 text-gray-900 font-extrabold hover:underline">
+                        <Boxes className="h-4 w-4 text-amber-600" />
+                        <span>패키지 센터 (제품 등록)</span>
                       </Link>
-                      <Link href="/owner/settlements?type=collab" className="block rounded-xl px-3 py-2 hover:bg-amber-50 font-semibold text-gray-800">
-                        • 콜라보 패키지 정산
-                      </Link>
+                      <p className="text-[11px] text-gray-500">AI 패키지 생성, 자체 묶음, 통계 분석</p>
                     </div>
-                  )}
-                </div>
 
-                {/* 4. 매장 및 상품 설정 */}
-                <Link
-                  href="/owner/stores"
-                  className="flex items-center space-x-1 hover:text-amber-600 font-bold py-2"
-                >
-                  <Store className="h-3.5 w-3.5 text-amber-600" />
-                  <span>매장/상품 설정</span>
-                </Link>
+                    {/* 3. 정산 */}
+                    <div className="rounded-2xl bg-gray-50 p-3 border border-gray-100 space-y-1">
+                      <Link href="/owner/settlements" className="flex items-center space-x-2 text-gray-900 font-extrabold hover:underline">
+                        <PieChart className="h-4 w-4 text-amber-600" />
+                        <span>정산 센터</span>
+                      </Link>
+                      <p className="text-[11px] text-gray-500">단일 매장 자체 정산 & 콜라보 정산</p>
+                    </div>
 
-                {/* 5. 계정 */}
-                <Link
-                  href="/owner/account"
-                  className="flex items-center space-x-1 hover:text-amber-600 font-bold py-2"
-                >
-                  <Settings className="h-3.5 w-3.5 text-amber-600" />
-                  <span>계정</span>
-                </Link>
+                    {/* 4. 매장 및 상품 설정 */}
+                    <div className="rounded-2xl bg-gray-50 p-3 border border-gray-100 space-y-1">
+                      <Link href="/owner/stores" className="flex items-center space-x-2 text-gray-900 font-extrabold hover:underline">
+                        <Store className="h-4 w-4 text-amber-600" />
+                        <span>매장 및 상품 설정</span>
+                      </Link>
+                      <p className="text-[11px] text-gray-500">매장 정보 수정, 콜라보 제품 관리</p>
+                    </div>
 
-                {/* 6. BIZ센터 */}
-                <Link
-                  href="/owner/support"
-                  className="flex items-center space-x-1 hover:text-amber-600 font-bold py-2"
-                >
-                  <Headphones className="h-3.5 w-3.5 text-amber-600" />
-                  <span>BIZ센터</span>
-                </Link>
-              </>
+                    {/* 5. 계정 */}
+                    <div className="rounded-2xl bg-gray-50 p-3 border border-gray-100 space-y-1">
+                      <Link href="/owner/account" className="flex items-center space-x-2 text-gray-900 font-extrabold hover:underline">
+                        <Settings className="h-4 w-4 text-amber-600" />
+                        <span>계정 관리</span>
+                      </Link>
+                      <p className="text-[11px] text-gray-500">사업자 정보 변경, 로그아웃, 계정 삭제</p>
+                    </div>
+
+                    {/* 6. BIZ센터 */}
+                    <div className="rounded-2xl bg-gray-50 p-3 border border-gray-100 space-y-1">
+                      <Link href="/owner/support" className="flex items-center space-x-2 text-gray-900 font-extrabold hover:underline">
+                        <Headphones className="h-4 w-4 text-amber-600" />
+                        <span>BIZ센터</span>
+                      </Link>
+                      <p className="text-[11px] text-gray-500">판매 및 매출 관련 1:1 전담 문의</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Profile User Menu Dropdown */}
