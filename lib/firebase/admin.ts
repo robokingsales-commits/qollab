@@ -1,14 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import rawAdmin from "firebase-admin";
+import { initializeApp, getApps, cert, App } from "firebase-admin/app";
+import { getAuth, Auth } from "firebase-admin/auth";
+import { getFirestore, Firestore } from "firebase-admin/firestore";
+import { getStorage, Storage } from "firebase-admin/storage";
 
-const admin: any = rawAdmin;
+let _adminApp: App | null = null;
 
-let _adminApp: any = null;
-
-function getOrInitAdminApp(): any {
+function getOrInitAdminApp(): App {
   if (_adminApp) return _adminApp;
 
-  const existingApps = admin.apps || (rawAdmin as any).apps || [];
+  const existingApps = getApps();
   if (existingApps.length > 0 && existingApps[0]) {
     _adminApp = existingApps[0];
     return _adminApp;
@@ -37,8 +37,8 @@ function getOrInitAdminApp(): any {
 
   if (projectId && clientEmail && privateKey && !privateKey.includes("your-private-key")) {
     try {
-      _adminApp = admin.initializeApp({
-        credential: admin.credential.cert({
+      _adminApp = initializeApp({
+        credential: cert({
           projectId,
           clientEmail,
           privateKey,
@@ -51,25 +51,26 @@ function getOrInitAdminApp(): any {
     }
   }
 
-  _adminApp = admin.initializeApp({ projectId });
+  _adminApp = initializeApp({ projectId });
   return _adminApp;
 }
 
-export function getAdminAuth(): any {
+export function getAdminAuth(): Auth {
   const app = getOrInitAdminApp();
-  return admin.auth(app);
+  return getAuth(app);
 }
 
-export function getAdminDb(): any {
+export function getAdminDb(): Firestore {
   const app = getOrInitAdminApp();
-  return admin.firestore(app);
+  return getFirestore(app);
 }
 
-export function getAdminStorage(): any {
+export function getAdminStorage(): Storage {
   const app = getOrInitAdminApp();
-  return admin.storage(app);
+  return getStorage(app);
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const adminApp: any = new Proxy({} as any, {
   get(_, prop) {
     return (getOrInitAdminApp() as any)[prop];

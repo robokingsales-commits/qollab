@@ -45,10 +45,19 @@ export const loginWithKakao = (role: string = "consumer") => {
     process.env.KAKAO_CLIENT_ID ||
     process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID ||
     "f374580fccoee2e4f29fdd081d1e390b";
-  const redirectUri =
+
+  let redirectUri =
     process.env.KAKAO_REDIRECT_URI ||
-    process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI ||
-    "https://qollab-gules.vercel.app/api/auth/kakao/callback";
+    process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI;
+
+  if (!redirectUri) {
+    if (typeof window !== "undefined") {
+      redirectUri = `${window.location.origin}/api/auth/kakao/callback`;
+    } else {
+      redirectUri = "https://qollab-gules.vercel.app/api/auth/kakao/callback";
+    }
+  }
+
   const kakaoAuthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
     redirectUri
   )}&response_type=code&state=${role}`;
@@ -60,10 +69,19 @@ export const loginWithNaver = (role: string = "consumer") => {
     process.env.NAVER_CLIENT_ID ||
     process.env.NEXT_PUBLIC_NAVER_CLIENT_ID ||
     "xLpTMSCykwss_uaeOqgI";
-  const redirectUri =
+  
+  let redirectUri =
     process.env.NAVER_REDIRECT_URI ||
-    process.env.NEXT_PUBLIC_NAVER_REDIRECT_URI ||
-    "https://qollab-gules.vercel.app/api/auth/naver/callback";
+    process.env.NEXT_PUBLIC_NAVER_REDIRECT_URI;
+
+  if (!redirectUri) {
+    if (typeof window !== "undefined") {
+      redirectUri = `${window.location.origin}/api/auth/naver/callback`;
+    } else {
+      redirectUri = "https://qollab-gules.vercel.app/api/auth/naver/callback";
+    }
+  }
+
   const naverAuthUrl = `https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(
     redirectUri
   )}&state=${role}`;

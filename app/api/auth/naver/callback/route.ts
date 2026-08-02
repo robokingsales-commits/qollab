@@ -27,12 +27,19 @@ export async function GET(request: Request) {
   }
 
   try {
+    const requestOrigin = new URL(request.url).origin;
+    const redirectUri =
+      process.env.NAVER_REDIRECT_URI ||
+      process.env.NEXT_PUBLIC_NAVER_REDIRECT_URI ||
+      `${requestOrigin}/api/auth/naver/callback`;
+
     const tokenUrl = new URL("https://nid.naver.com/oauth2.0/token");
     tokenUrl.searchParams.set("grant_type", "authorization_code");
     tokenUrl.searchParams.set("client_id", clientId);
     tokenUrl.searchParams.set("client_secret", clientSecret);
     tokenUrl.searchParams.set("code", code);
     tokenUrl.searchParams.set("state", state);
+    tokenUrl.searchParams.set("redirect_uri", redirectUri);
 
     const tokenRes = await fetch(tokenUrl.toString(), { method: "GET" });
     const tokenData = await tokenRes.json();
