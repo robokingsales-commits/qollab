@@ -24,7 +24,8 @@ import {
   Headphones,
   Settings,
   ChevronRight,
-  Menu
+  Menu,
+  LogIn
 } from "lucide-react";
 import { auth } from "@/lib/firebase/client";
 import { onAuthStateChanged, signOut, User as FirebaseUser } from "firebase/auth";
@@ -45,7 +46,7 @@ export default function Header({ initialMode = "consumer" }: HeaderProps) {
   
   // Dropdown states
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [signupMenuOpen, setSignupMenuOpen] = useState(false);
+  const [signupHoverOpen, setSignupHoverOpen] = useState(false);
   const [consumerMainMenuOpen, setConsumerMainMenuOpen] = useState(false);
   const [bizMainMenuOpen, setBizMainMenuOpen] = useState(false);
   const [menuTreeModalOpen, setMenuTreeModalOpen] = useState(false);
@@ -115,40 +116,6 @@ export default function Header({ initialMode = "consumer" }: HeaderProps) {
                 <HelpCircle className="h-3.5 w-3.5" />
                 <span>고객센터</span>
               </Link>
-
-              {/* 회원가입 / 전환 드롭다운 */}
-              <div className="relative">
-                <button
-                  onClick={() => setSignupMenuOpen(!signupMenuOpen)}
-                  onBlur={() => setTimeout(() => setSignupMenuOpen(false), 200)}
-                  className="flex items-center space-x-1 text-emerald-400 hover:text-emerald-300 font-bold transition"
-                >
-                  <UserPlus className="h-3.5 w-3.5" />
-                  <span>회원가입 / 전환</span>
-                  <ChevronDown className="h-3 w-3" />
-                </button>
-
-                {signupMenuOpen && (
-                  <div className="absolute right-0 mt-1.5 w-56 rounded-2xl bg-white p-2 shadow-2xl border border-gray-100 space-y-1 text-xs z-50 text-gray-800">
-                    <div className="px-3 py-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
-                      가입 및 회원 전환
-                    </div>
-                    <Link
-                      href="/auth/login"
-                      className="block rounded-xl px-3 py-2 hover:bg-emerald-50 text-gray-800 font-semibold"
-                    >
-                      • 개인회원 / BIZ 회원 가입
-                    </Link>
-                    <Link
-                      href="/onboarding"
-                      className="flex items-center space-x-1.5 rounded-xl px-3 py-2 hover:bg-emerald-50 text-emerald-700 font-bold"
-                    >
-                      <ArrowRightLeft className="h-3.5 w-3.5" />
-                      <span>• 개인회원 → BIZ 회원 전환</span>
-                    </Link>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </div>
@@ -398,7 +365,7 @@ export default function Header({ initialMode = "consumer" }: HeaderProps) {
               </div>
             )}
 
-            {/* Profile User Menu Dropdown */}
+            {/* Profile User Menu Dropdown or Logged out Auth Buttons */}
             {isLoggedIn ? (
               <div className="relative">
                 <button
@@ -494,12 +461,60 @@ export default function Header({ initialMode = "consumer" }: HeaderProps) {
                 )}
               </div>
             ) : (
-              <Link
-                href="/auth/login"
-                className="rounded-xl bg-gray-900 px-4 py-2 text-xs font-bold text-white hover:bg-gray-800 transition shadow-sm"
-              >
-                로그인 / 회원가입
-              </Link>
+              /* Two Separate Auth Buttons: 로그인 & 회원가입 */
+              <div className="flex items-center space-x-2">
+                {/* 1. 로그인 버튼 */}
+                <Link
+                  href="/auth/login"
+                  className="flex items-center space-x-1 rounded-xl border border-gray-300 bg-white px-3.5 py-1.5 text-xs font-bold text-gray-800 hover:bg-gray-50 transition shadow-sm"
+                >
+                  <LogIn className="h-3.5 w-3.5 text-gray-600" />
+                  <span>로그인</span>
+                </Link>
+
+                {/* 2. 회원가입 버튼 (Hover Dropdown지원) */}
+                <div 
+                  className="relative"
+                  onMouseEnter={() => setSignupHoverOpen(true)}
+                  onMouseLeave={() => setSignupHoverOpen(false)}
+                >
+                  <Link
+                    href="/onboarding"
+                    className="flex items-center space-x-1 rounded-xl bg-indigo-600 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-indigo-500 transition shadow-sm"
+                  >
+                    <UserPlus className="h-3.5 w-3.5" />
+                    <span>회원가입</span>
+                    <ChevronDown className="h-3 w-3 text-indigo-200" />
+                  </Link>
+
+                  {signupHoverOpen && (
+                    <div className="absolute right-0 mt-1.5 w-56 rounded-2xl bg-white p-2 shadow-2xl border border-gray-100 space-y-1 text-xs z-50 text-gray-800">
+                      <div className="px-3 py-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                        회원가입 유형 선택
+                      </div>
+                      <Link
+                        href="/onboarding?mode=general"
+                        className="block rounded-xl px-3 py-2 hover:bg-indigo-50 text-gray-800 font-semibold"
+                      >
+                        • 일반 회원가입
+                      </Link>
+                      <Link
+                        href="/onboarding?mode=biz"
+                        className="block rounded-xl px-3 py-2 hover:bg-amber-50 text-amber-900 font-bold"
+                      >
+                        • BIZ 회원가입 (점주/사업자)
+                      </Link>
+                      <Link
+                        href="/onboarding"
+                        className="flex items-center space-x-1.5 rounded-xl px-3 py-2 hover:bg-emerald-50 text-emerald-700 font-bold border-t border-gray-100 mt-1"
+                      >
+                        <ArrowRightLeft className="h-3.5 w-3.5" />
+                        <span>• 개인회원 → BIZ 회원 전환</span>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </div>
