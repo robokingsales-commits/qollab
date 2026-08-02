@@ -11,7 +11,10 @@ export async function GET(request: Request) {
   const state = searchParams.get("state") || "consumer";
   const role = ["owner", "admin"].includes(state) ? state : "consumer";
 
-  const clientId = process.env.KAKAO_CLIENT_ID || process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || "f374580fcc0ee2e4f29fdd081d1e390b";
+  let clientId = process.env.KAKAO_CLIENT_ID || process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID || "f374580fcc0ee2e4f29fdd081d1e390b";
+  if (clientId.includes("fccoee")) {
+    clientId = "f374580fcc0ee2e4f29fdd081d1e390b";
+  }
   const redirectUri =
     process.env.KAKAO_REDIRECT_URI ||
     process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI ||

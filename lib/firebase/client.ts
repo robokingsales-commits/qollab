@@ -41,10 +41,14 @@ export const loginWithGoogleRedirect = (role: string = "consumer") => {
 };
 
 export const loginWithKakao = (role: string = "consumer") => {
-  const clientId =
+  let clientId =
     process.env.KAKAO_CLIENT_ID ||
     process.env.NEXT_PUBLIC_KAKAO_CLIENT_ID ||
     "f374580fcc0ee2e4f29fdd081d1e390b";
+
+  if (clientId.includes("fccoee")) {
+    clientId = "f374580fcc0ee2e4f29fdd081d1e390b";
+  }
 
   let redirectUri =
     process.env.KAKAO_REDIRECT_URI ||
