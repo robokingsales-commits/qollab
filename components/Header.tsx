@@ -85,7 +85,7 @@ export default function Header({ initialMode = "consumer" }: HeaderProps) {
     }
   };
 
-  const isLoggedIn = !!user || !!Cookies.get("qollab_user_role");
+  const isLoggedIn = !!user;
   const currentRole = role || (Cookies.get("qollab_user_role") as UserRole) || "consumer";
 
   return (

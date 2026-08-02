@@ -20,7 +20,8 @@ import {
   ChevronRight,
   LayoutDashboard,
   Boxes,
-  PieChart
+  PieChart,
+  LogIn
 } from "lucide-react";
 
 interface MenuTreeModalProps {
@@ -102,29 +103,41 @@ export default function MenuTreeModal({ isOpen, onClose }: MenuTreeModalProps) {
               <ChevronRight className="h-4 w-4 text-slate-400 group-hover:translate-x-1 transition" />
             </Link>
 
+            {/* 로그인 & 회원가입 분리 메뉴 */}
             <div className="rounded-2xl bg-slate-800/80 border border-slate-700 p-3.5 space-y-2">
-              <div className="flex items-center space-x-2 text-emerald-400 font-extrabold text-sm">
-                <UserPlus className="h-4 w-4" />
-                <span>회원가입</span>
-              </div>
-              <div className="flex flex-col gap-1 text-xs">
+              <div className="flex items-center justify-between">
                 <Link
-                  href="/auth/login?tab=signup"
+                  href="/auth/login"
                   onClick={onClose}
-                  className="text-slate-300 hover:text-emerald-400 flex items-center justify-between group py-0.5"
+                  className="flex items-center space-x-1 text-slate-200 hover:text-white font-extrabold text-xs"
                 >
-                  <span>• 개인회원 / BIZ 회원 가입</span>
-                  <ChevronRight className="h-3 w-3 text-slate-500 group-hover:translate-x-1 transition" />
+                  <LogIn className="h-3.5 w-3.5 text-slate-400" />
+                  <span>로그인</span>
                 </Link>
                 <Link
                   href="/onboarding"
                   onClick={onClose}
-                  className="text-slate-300 hover:text-emerald-400 flex items-center justify-between group py-0.5"
+                  className="flex items-center space-x-1 text-indigo-400 hover:text-indigo-300 font-extrabold text-xs"
                 >
-                  <span className="flex items-center gap-1">
-                    <ArrowRightLeft className="h-3 w-3 text-emerald-400" />
-                    <span>개인회원 → BIZ 회원 전환</span>
-                  </span>
+                  <UserPlus className="h-3.5 w-3.5" />
+                  <span>회원가입</span>
+                </Link>
+              </div>
+              <div className="flex flex-col gap-1 text-[11px] border-t border-slate-700/60 pt-1.5">
+                <Link
+                  href="/onboarding?mode=general"
+                  onClick={onClose}
+                  className="text-slate-300 hover:text-indigo-400 flex items-center justify-between group py-0.5"
+                >
+                  <span>• 일반 회원가입</span>
+                  <ChevronRight className="h-3 w-3 text-slate-500 group-hover:translate-x-1 transition" />
+                </Link>
+                <Link
+                  href="/onboarding?mode=biz"
+                  onClick={onClose}
+                  className="text-slate-300 hover:text-amber-400 flex items-center justify-between group py-0.5"
+                >
+                  <span>• BIZ 회원가입</span>
                   <ChevronRight className="h-3 w-3 text-slate-500 group-hover:translate-x-1 transition" />
                 </Link>
               </div>
