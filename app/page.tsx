@@ -681,22 +681,6 @@ export default function Home() {
             </form>
           </div>
 
-          {/* User Requested Video with Stitch Design */}
-          <div className="w-full flex justify-center my-4">
-            <div className="w-full max-w-2xl rounded-2xl p-2 border-2 border-dashed border-gray-400 bg-gray-50 shadow-sm flex items-center justify-center">
-              <div className="w-full rounded-xl overflow-hidden shadow-md bg-black">
-                <video 
-                  src="/0811.mp4" 
-                  autoPlay 
-                  loop 
-                  muted 
-                  playsInline 
-                  className="w-full h-auto object-cover"
-                />
-              </div>
-            </div>
-          </div>
-
           {/* 2. Apple Bento Rolling Banner (16:9 Banner Aspect Ratio) */}
           <div className="relative w-full rounded-2xl overflow-hidden shadow-lg group bg-slate-900 aspect-16/9 max-h-56">
             <img
