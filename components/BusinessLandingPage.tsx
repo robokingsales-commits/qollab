@@ -79,19 +79,6 @@ export default function BusinessLandingPage({ onExploreApp }: BusinessLandingPag
           </h2>
         </div>
 
-        <div className="w-full flex justify-center my-6 lg:my-10">
-          <div className="w-full max-w-5xl rounded-2xl overflow-hidden shadow-2xl border border-white/10">
-            <video 
-              src="/0811.mp4" 
-              autoPlay 
-              loop 
-              muted 
-              playsInline 
-              className="w-full h-auto object-cover"
-            />
-          </div>
-        </div>
-
         <div className="max-w-4xl mb-10 sm:mb-16">
           <p className="text-xs sm:text-sm md:text-base text-slate-400 max-w-2xl leading-relaxed">
             브랜드와 가게를 콜라보할수록 할인 혜택은 더욱 커집니다. 비싼 광고비와 수수료 대신, 무한한 시너지로 함께 성장하는 콜라보 플랫폼 Qollab.
