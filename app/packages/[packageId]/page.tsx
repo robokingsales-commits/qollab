@@ -84,12 +84,12 @@ export default function PackageDetailPage() {
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-10">
       <div className="space-y-4">
         <div className="flex items-center space-x-3">
-          <span className="rounded-full bg-indigo-600 px-3.5 py-1 text-xs font-black text-white shadow-sm flex items-center space-x-1">
+          <span className="rounded-full bg-[#071D49] px-3.5 py-1 text-xs font-black text-white shadow-sm flex items-center space-x-1">
             <Zap className="h-3.5 w-3.5" />
             <span>V.I.M Matching Score 94점</span>
           </span>
           <span className="text-xs font-semibold text-gray-500 flex items-center space-x-1">
-            <MapPin className="h-3.5 w-3.5 text-indigo-500" />
+            <MapPin className="h-3.5 w-3.5 text-[#071D49]" />
             <span>{mockPackage.region}</span>
           </span>
         </div>
@@ -149,7 +149,7 @@ export default function PackageDetailPage() {
             <div className="border-b border-gray-100 pb-4">
               <span className="text-xs font-semibold text-gray-400">결합 할인 바우처 수량</span>
               <div className="flex items-baseline space-x-2 mt-1">
-                <span className="text-3xl font-black text-indigo-600">
+                <span className="text-3xl font-black text-[#071D49]">
                   {formatKRW(mockPackage.sale_price)}
                 </span>
                 <span className="text-sm text-gray-400 line-through">
@@ -178,7 +178,7 @@ export default function PackageDetailPage() {
 
             <button
               onClick={handleCheckout}
-              className="w-full flex items-center justify-center space-x-2 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 py-4 text-base font-extrabold text-white shadow-lg hover:brightness-110 transition"
+              className="w-full flex items-center justify-center space-x-2 rounded-2xl bg-[#071D49] hover:bg-[#051435] py-4 text-base font-extrabold text-white shadow-lg transition cursor-pointer"
             >
               <Ticket className="h-5 w-5" />
               <span>원클릭 패키지 구매하기</span>

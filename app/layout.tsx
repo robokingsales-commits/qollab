@@ -1,21 +1,10 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import AppLayoutShell from "@/components/AppLayoutShell";
 
 export const metadata: Metadata = {
-  title: "Qollab - V.I.M Engine Package Platform",
-  description: "Cross-store dynamic package voucher platform driven by V.I.M matching engine.",
+  title: "Qollab - Clean Monochrome Mobile Web/App",
+  description: "Clean White & Black Mobile-First Dynamic Collaboration Platform.",
 };
 
 export default function RootLayout({
@@ -24,13 +13,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 text-gray-900 min-h-screen flex flex-col`}
-      >
-        <Header />
-        <main className="flex-1">{children}</main>
+    <html lang="ko" className="scroll-smooth">
+      <body className="bg-black text-white font-sans antialiased min-h-screen w-full selection:bg-[#FFEE00] selection:text-black">
+        <AppLayoutShell>{children}</AppLayoutShell>
       </body>
     </html>
   );
 }
+

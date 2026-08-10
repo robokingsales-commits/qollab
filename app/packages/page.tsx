@@ -4,7 +4,9 @@ import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { PackageDocument } from "@/lib/types/schema";
 import { formatKRW } from "@/lib/utils";
-import { MapPin, Zap, ArrowRight, ShoppingBag, Globe, Store } from "lucide-react";
+import { MapPin, Zap, ArrowRight, ShoppingBag, Globe, Store, Star, Check, Plus, Layers } from "lucide-react";
+import { recordPackageView } from "@/lib/services/recommendation-service";
+import { PERSONA_PACKAGES_100 } from "@/lib/data/personaPackages";
 
 export interface PackageCardData {
   packageData: PackageDocument;
@@ -15,6 +17,8 @@ export interface PackageCardData {
     category: string;
     story_label: string;
   }[];
+  thumbnail?: string;
+  rating?: number;
 }
 
 interface PageProps {
@@ -27,251 +31,212 @@ export default function PackagesExplorerPage({ searchParams }: PageProps) {
 
   const [packages, setPackages] = useState<PackageCardData[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>(initialCategory);
+  const [addedCombos, setAddedCombos] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const samplePackages: PackageCardData[] = [
-      {
+    const brandBrands = ["베스킨라빈스", "투썸", "스타벅스", "감성커피", "더리터", "파리바게뜨", "뚜레쥬르", "설빙", "공차", "CGV", "롯데시네마", "CU", "GS25", "세븐일레븐"];
+    
+    const sampleImages = [
+      "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80",
+      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=600&q=80",
+    ];
+
+    const personaCardData: PackageCardData[] = PERSONA_PACKAGES_100.map((p, idx) => {
+      const isBrand = brandBrands.some((b) => p.store.includes(b) || p.category.includes(b));
+      return {
         packageData: {
-          packageId: "pkg-demo-1",
-          title: "성수 힐링 데이 (유기농 두피 스파 & 루프탑 카페 패키지)",
-          region: "서울 성동구 성수동 (우리 동네)",
+          packageId: p.id,
+          title: p.title,
+          region: p.region,
           headcount: 2,
-          list_total: 69000,
-          sale_price: 49000,
+          list_total: p.origPrice,
+          sale_price: p.price,
           fee_rate: 0.1,
-          stock: 35,
-          valid_from: "2026-08-01",
-          valid_to: "2026-08-31",
-          status: "open",
-          createdAt: new Date().toISOString(),
-        },
-        vimScore: 94,
-        categoryType: "local",
-        stores: [
-          {
-            name: "성수 루프탑 로스터리 카페",
-            category: "카페/디저트",
-            story_label: "3대째 로스팅 가문의 깊은 아로마와 핸드메이드 스콘 이야기",
-          },
-          {
-            name: "성수 아틀리에 헤어 스튜디오",
-            category: "뷰티/미용",
-            story_label: "1:1 맞춤형 유기농 두피 스파로 지친 도시인에게 전하는 힐링",
-          },
-        ],
-      },
-      {
-        packageData: {
-          packageId: "pkg-demo-2",
-          title: "성수 나이트 라이프 (수제맥주 & 타파스 + 클래식 바)",
-          region: "서울 성동구 성수동 (우리 동네)",
-          headcount: 2,
-          list_total: 58000,
-          sale_price: 39000,
-          fee_rate: 0.1,
-          stock: 20,
-          valid_from: "2026-08-01",
-          valid_to: "2026-08-31",
-          status: "open",
-          createdAt: new Date().toISOString(),
-        },
-        vimScore: 91,
-        categoryType: "local",
-        stores: [
-          {
-            name: "뚝섬 크래프트 비어 파일럿",
-            category: "식당/맛집",
-            story_label: "독자적 효모로 양조하는 성수 수제맥주의 참맛과 스페인 타파스의 만남",
-          },
-          {
-            name: "성수 재즈클럽 레코드",
-            category: "액티비티/체험",
-            story_label: "아날로그 바이닐과 하이엔드 음향으로 듣는 오리지널 재즈 라이브",
-          },
-        ],
-      },
-      {
-        packageData: {
-          packageId: "pkg-brand-1",
-          title: "[브랜드 패키지] 전국 어디서나! CGV 영화관람권 + 투썸플레이스 아메리카노 2잔",
-          region: "전국 어디서나 사용 가능 (브랜드 패키지)",
-          headcount: 2,
-          list_total: 32000,
-          sale_price: 23000,
-          fee_rate: 0.08,
-          stock: 100,
+          stock: 50,
           valid_from: "2026-08-01",
           valid_to: "2026-12-31",
           status: "open",
           createdAt: new Date().toISOString(),
         },
-        vimScore: 96,
-        categoryType: "brand",
+        vimScore: p.vimScore,
+        categoryType: isBrand ? "brand" : "local",
         stores: [
           {
-            name: "CGV 전국 영화관",
-            category: "문화/영화",
-            story_label: "전국 CGV에서 언제든지 이용 가능한 메가 브랜드 패키지",
-          },
-          {
-            name: "투썸플레이스 전국 매장",
-            category: "카페/음료",
-            story_label: "프리미엄 원두 커피와 디저트를 경험할 수 있는 전국 바우처",
+            name: p.store,
+            category: p.category,
+            story_label: p.subtitle,
           },
         ],
-      },
-    ];
-    setPackages(samplePackages);
+        thumbnail: sampleImages[idx % sampleImages.length],
+        rating: +(4.5 + (idx % 5) * 0.1).toFixed(1),
+      };
+    });
+    setPackages(personaCardData);
     setLoading(false);
   }, []);
 
-  const filteredPackages = packages.filter((pkg) => {
-    if (activeCategory === "local") return pkg.categoryType === "local";
-    if (activeCategory === "brand") return pkg.categoryType === "brand";
+  const toggleComboItem = (id: string) => {
+    setAddedCombos(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const filteredPackages = packages.filter((p) => {
+    if (activeCategory === "local") return p.categoryType === "local";
+    if (activeCategory === "brand") return p.categoryType === "brand";
     return true;
   });
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 space-y-8">
-      {/* Title & Category Selector */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-gray-200 pb-6">
-        <div>
-          <div className="inline-flex items-center space-x-2 rounded-full bg-indigo-100 px-3 py-1 text-xs font-bold text-indigo-800 border border-indigo-200">
-            <ShoppingBag className="h-3.5 w-3.5" />
-            <span>추천 패키지 탐색</span>
-          </div>
-          <h1 className="text-3xl font-black text-gray-900 mt-2">추천 패키지 (Recommended Packages)</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            우리 동네 매장 패키지와 전국 어디서나 구매할 수 있는 브랜드 패키지를 살펴보세요.
-          </p>
+    <div className="min-h-screen pb-32 pt-6 px-4 md:px-6 max-w-7xl mx-auto space-y-8">
+      {/* Header Section (Stitch Style) */}
+      <section className="text-center md:text-left space-y-2">
+        <div className="inline-flex items-center space-x-1.5 rounded-full bg-[#071D49]/10 px-3 py-1 text-xs font-bold text-[#071D49] border border-[#071D49]/15">
+          <Layers className="h-3.5 w-3.5" />
+          <span>DIY Combo Selection</span>
         </div>
+        <h1 className="text-3xl md:text-4xl font-extrabold text-[#071D49] tracking-tight">직접 만드는 콤보</h1>
+        <p className="text-sm text-slate-500 max-w-2xl">
+          함께하면 할인이 배가 되는 동네 상권 &amp; 브랜드 콤보 결합 상품을 둘러보세요.
+        </p>
+      </section>
 
-        {/* Tab Switchers: 전체 / 우리 동네 / 브랜드 패키지 */}
-        <div className="flex items-center space-x-2 bg-gray-100 p-1.5 rounded-2xl border border-gray-200 shadow-inner text-xs font-bold">
-          <button
-            onClick={() => setActiveCategory("all")}
-            className={`px-4 py-2 rounded-xl transition ${
-              activeCategory === "all"
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            전체 패키지
-          </button>
-          <button
-            onClick={() => setActiveCategory("local")}
-            className={`flex items-center space-x-1.5 px-4 py-2 rounded-xl transition ${
-              activeCategory === "local"
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            <Store className="h-3.5 w-3.5 text-amber-300" />
-            <span>우리 동네 패키지</span>
-          </button>
-          <button
-            onClick={() => setActiveCategory("brand")}
-            className={`flex items-center space-x-1.5 px-4 py-2 rounded-xl transition ${
-              activeCategory === "brand"
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            <Globe className="h-3.5 w-3.5 text-emerald-300" />
-            <span>브랜드 패키지 (전국 구매)</span>
-          </button>
-        </div>
+      {/* Category Tabs (Apple Segmented Control Style) */}
+      <div className="flex bg-slate-200/60 p-1.5 rounded-2xl w-full max-w-md backdrop-blur-md border border-black/5 text-xs font-extrabold shadow-inner">
+        <button
+          onClick={() => setActiveCategory("all")}
+          className={`flex-1 py-2.5 rounded-xl transition-all cursor-pointer ${
+            activeCategory === "all" ? "bg-white text-[#071D49] shadow-sm" : "text-slate-500 hover:text-[#071D49]"
+          }`}
+        >
+          전체 보기 ({packages.length})
+        </button>
+        <button
+          onClick={() => setActiveCategory("local")}
+          className={`flex-1 flex items-center justify-center space-x-1 py-2.5 rounded-xl transition-all cursor-pointer ${
+            activeCategory === "local" ? "bg-white text-[#071D49] shadow-sm" : "text-slate-500 hover:text-[#071D49]"
+          }`}
+        >
+          <Store className="h-3.5 w-3.5" />
+          <span>우리 동네 콜라보</span>
+        </button>
+        <button
+          onClick={() => setActiveCategory("brand")}
+          className={`flex-1 flex items-center justify-center space-x-1 py-2.5 rounded-xl transition-all cursor-pointer ${
+            activeCategory === "brand" ? "bg-white text-[#071D49] shadow-sm" : "text-slate-500 hover:text-[#071D49]"
+          }`}
+        >
+          <Globe className="h-3.5 w-3.5" />
+          <span>전국 브랜드</span>
+        </button>
       </div>
 
+      {/* Bento Grid / Merchant List (Stitch Bento Card Design) */}
       {loading ? (
-        <div className="py-12 text-center text-gray-500">패키지 목록 로딩 중...</div>
+        <div className="py-16 text-center text-slate-400 font-semibold">패키지 탐색 중...</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {filteredPackages.map(({ packageData, vimScore, categoryType, stores }) => {
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredPackages.map((item) => {
+            const isAdded = addedCombos.includes(item.packageData.packageId);
             const discountPercent = Math.round(
-              ((packageData.list_total - packageData.sale_price) / packageData.list_total) * 100
+              ((item.packageData.list_total - item.packageData.sale_price) /
+                item.packageData.list_total) *
+                100
             );
 
             return (
-              <div
-                key={packageData.packageId}
-                className="group relative rounded-3xl bg-white p-6 shadow-sm border border-gray-200 hover:shadow-xl hover:border-indigo-300 transition-all flex flex-col justify-between"
+              <article
+                key={item.packageData.packageId}
+                className={`glass-card flex flex-col group relative overflow-hidden transition-all duration-300 hover:shadow-lg border border-slate-200/80 rounded-3xl bg-white ${
+                  isAdded ? "ring-2 ring-indigo-600 bg-indigo-50/20" : ""
+                }`}
               >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 px-3 py-1 text-xs font-extrabold text-white shadow-sm flex items-center space-x-1">
-                      <Zap className="h-3 w-3" />
-                      <span>V.I.M {vimScore}점</span>
-                    </span>
-
-                    <div className="flex items-center space-x-1 text-xs font-semibold text-gray-500">
-                      <MapPin className="h-3.5 w-3.5 text-gray-400" />
-                      <span>{packageData.region}</span>
-                    </div>
+                {/* Image Container */}
+                <div className="relative h-48 w-full bg-slate-100 overflow-hidden">
+                  <img
+                    src={item.thumbnail}
+                    alt={item.packageData.title}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  {/* Rating Tag */}
+                  <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full border border-black/5 flex items-center gap-1 shadow-xs">
+                    <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                    <span className="text-xs font-bold text-slate-800">{item.rating}</span>
                   </div>
 
-                  <div className="flex items-center space-x-2">
-                    <span className={`text-[11px] font-black px-2.5 py-0.5 rounded-md ${
-                      categoryType === "brand" 
-                        ? "bg-emerald-100 text-emerald-800 border border-emerald-200" 
-                        : "bg-amber-100 text-amber-800 border border-amber-200"
-                    }`}>
-                      {categoryType === "brand" ? "전국 브랜드 패키지" : "우리 동네 패키지"}
-                    </span>
+                  {/* Discount Badge */}
+                  <div className="absolute top-3 left-3 bg-[#071D49] text-white px-2.5 py-1 rounded-full text-[11px] font-black shadow-md">
+                    {discountPercent}% OFF
                   </div>
-
-                  <h3 className="text-xl font-bold text-gray-900 group-hover:text-indigo-600 transition">
-                    {packageData.title}
-                  </h3>
-
-                  <div className="space-y-2 rounded-2xl bg-gray-50 p-4 border border-gray-100">
-                    <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
-                      포함된 상품 및 매장 조합
-                    </div>
-                    {stores.map((s, idx) => (
-                      <div key={idx} className="flex items-center justify-between text-xs">
-                        <div className="flex items-center space-x-2">
-                          <span
-                            className={`h-2 w-2 rounded-full ${
-                              idx === 0 ? "bg-indigo-600" : "bg-amber-500"
-                            }`}
-                          />
-                          <span className="font-bold text-gray-900">{s.name}</span>
-                          <span className="text-gray-400">({s.category})</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <p className="text-xs text-amber-900 bg-amber-50 p-3 rounded-xl border border-amber-200 font-medium italic">
-                    &quot;{stores[0].story_label}&quot;
-                  </p>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                {/* Content Details */}
+                <div className="p-5 flex flex-col flex-grow justify-between space-y-4">
                   <div>
-                    <div className="flex items-center space-x-2 text-xs text-gray-400 line-through">
-                      <span>정가 {formatKRW(packageData.list_total)}</span>
-                      <span className="font-bold text-rose-500">{discountPercent}% OFF</span>
+                    <div className="flex items-center space-x-2 text-xs text-slate-400 font-semibold mb-1">
+                      <MapPin className="h-3.5 w-3.5 text-indigo-500" />
+                      <span>{item.packageData.region}</span>
+                      <span>•</span>
+                      <span>{item.stores[0]?.category}</span>
                     </div>
-                    <div className="text-2xl font-black text-indigo-600">
-                      {formatKRW(packageData.sale_price)}
-                    </div>
+
+                    <Link
+                      href={`/packages/${item.packageData.packageId}`}
+                      onClick={() => recordPackageView({
+                        id: item.packageData.packageId,
+                        title: item.packageData.title,
+                        category: item.categoryType,
+                      })}
+                      className="font-extrabold text-lg text-[#071D49] tracking-tight hover:underline line-clamp-1"
+                    >
+                      {item.packageData.title}
+                    </Link>
+
+                    <p className="text-xs text-slate-500 line-clamp-2 mt-1 font-medium">
+                      {item.stores[0]?.story_label}
+                    </p>
                   </div>
 
-                  <Link
-                    href={`/packages/pkg-demo-1`}
-                    className="flex items-center space-x-2 rounded-2xl bg-gray-900 px-5 py-3 text-xs font-bold text-white shadow-md group-hover:bg-indigo-600 transition"
-                  >
-                    <span>상세보기</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
+                  {/* Bottom Action & Price */}
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <div>
+                      <span className="text-xs text-slate-400 line-through block">
+                        {formatKRW(item.packageData.list_total)}
+                      </span>
+                      <span className="text-lg font-black text-[#071D49]">
+                        {formatKRW(item.packageData.sale_price)}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => toggleComboItem(item.packageData.packageId)}
+                      className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
+                        isAdded
+                          ? "bg-indigo-600 text-white shadow-md"
+                          : "bg-slate-100 text-[#071D49] hover:bg-slate-200"
+                      }`}
+                    >
+                      {isAdded ? (
+                        <>
+                          <Check className="h-3.5 w-3.5" />
+                          <span>담김</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-3.5 w-3.5" />
+                          <span>콤보 담기</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </article>
             );
           })}
-        </div>
+        </section>
       )}
     </div>
   );

@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 100" width="460" height="100" fill="#071D49">
+  <!-- Official QOLLAB Emblem + Wordmark Combo Logo (Pantone 2768 C Theme) -->
+  <g transform="translate(5, 5)">
+    <!-- Octagonal Split 'Q' Emblem -->
+    <g id="qollab-emblem">
+      <!-- Main Octagon Body & Inner Hole (Even-Odd cutout) -->
+      <path fill-rule="evenodd" clip-rule="evenodd" d="
+        M 30,0 
+        L 60,0 
+        L 90,30 
+        L 90,60 
+        L 78,72 
+        L 100,94 
+        L 83,111 
+        L 61,89 
+        L 60,90 
+        L 30,90 
+        L 0,60 
+        L 0,30 
+        Z 
+        M 45,26 
+        C 58.25,26 69,36.75 69,50 
+        C 69,63.25 58.25,74 45,74 
+        C 31.75,74 21,63.25 21,50 
+        C 21,36.75 31.75,26 45,26 Z
+      " />
+      
+      <!-- Diagonal Slit Cutout (Angled at 45 deg) -->
+      <path d="M -5 18 L 72 95 L 62 105 L -15 28 Z" fill="#ffffff" />
+      
+      <!-- Bottom Right Tail Rectangular Bar -->
+      <path d="M 50 55 L 85 90 L 68 107 L 33 72 Z" fill="#071D49" />
+      
+      <!-- Inner Circle Hole Overlay -->
+      <circle cx="45" cy="50" r="23" fill="#ffffff" />
+    </g>
+
+    <!-- QOLLAB Wordmark Text -->
+    <g id="qollab-wordmark" transform="translate(108, 12)">
+      <!-- Letter Q -->
+      <path fill-rule="evenodd" clip-rule="evenodd" d="
+        M 34,4 
+        C 52.8,4 68,19.2 68,38 
+        C 68,45.7 65.5,52.8 61.2,58.5 
+        L 73,70.3 
+        L 62.3,81 
+        L 51,69.7 
+        C 45.8,73.7 39.3,76 34,76 
+        C 15.2,76 0,60.8 0,38 
+        C 0,19.2 15.2,4 34,4 Z 
+        M 34,18.5 
+        C 23.2,18.5 14.5,27.2 14.5,38 
+        C 14.5,48.8 23.2,57.5 34,57.5 
+        C 44.8,57.5 53.5,48.8 53.5,38 
+        C 53.5,27.2 44.8,18.5 34,18.5 Z
+      " />
+      
+      <!-- Letter O -->
+      <path fill-rule="evenodd" clip-rule="evenodd" transform="translate(80, 0)" d="
+        M 34,4 
+        C 52.8,4 68,19.2 68,38 
+        C 68,56.8 52.8,76 34,76 
+        C 15.2,76 0,56.8 0,38 
+        C 0,19.2 15.2,4 34,4 Z 
+        M 34,18.5 
+        C 23.2,18.5 14.5,27.2 14.5,38 
+        C 14.5,48.8 23.2,57.5 34,57.5 
+        C 44.8,57.5 53.5,48.8 53.5,38 
+        C 53.5,27.2 44.8,18.5 34,18.5 Z
+      " />
+
+      <!-- Letter L (1st) -->
+      <path transform="translate(160, 0)" d="
+        M 0,5 H 15 V 60 H 46 V 74 H 0 Z
+      " />
+
+      <!-- Letter L (2nd) -->
+      <path transform="translate(216, 0)" d="
+        M 0,5 H 15 V 60 H 46 V 74 H 0 Z
+      " />
+
+      <!-- Letter A -->
+      <path fill-rule="evenodd" clip-rule="evenodd" transform="translate(272, 0)" d="
+        M 30,5 
+        L 60,74 
+        H 44 
+        L 37,58 
+        H 23 
+        L 16,74 
+        H 0 
+        L 30,5 Z 
+        M 30,20 
+        L 26,45 
+        H 34 
+        L 30,20 Z
+      " />
+
+      <!-- Letter B -->
+      <path fill-rule="evenodd" clip-rule="evenodd" transform="translate(342, 0)" d="
+        M 0,5 
+        H 38 
+        C 50,5 58,11 58,22 
+        C 58,29 53,35 45,37 
+        C 55,39 61,46 61,57 
+        C 61,69 50,74 37,74 
+        H 0 
+        V 5 Z 
+        M 15,17 
+        V 33 
+        H 34 
+        C 40,33 44,30 44,25 
+        C 44,20 40,17 34,17 
+        H 15 Z 
+        M 15,45 
+        V 62 
+        H 36 
+        C 43,62 47,58 47,53.5 
+        C 47,49 43,45 36,45 
+        H 15 Z
+      " />
+    </g>
+  </g>
+</svg>
