@@ -3,6 +3,7 @@ import "./globals.css";
 import AppLayoutShell from "@/components/AppLayoutShell";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://qollab.life"),
   title: "Qollab",
   description: "More Together, More Savings",
   openGraph: {
@@ -10,13 +11,6 @@ export const metadata: Metadata = {
     description: "More Together, More Savings",
     url: "https://qollab.life",
     siteName: "Qollab",
-    images: [
-      {
-        url: "/qollab-logo.png",
-        width: 800,
-        height: 600,
-      },
-    ],
     locale: "ko_KR",
     type: "website",
   },
