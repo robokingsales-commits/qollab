@@ -3,8 +3,23 @@ import "./globals.css";
 import AppLayoutShell from "@/components/AppLayoutShell";
 
 export const metadata: Metadata = {
-  title: "Qollab - Clean Monochrome Mobile Web/App",
-  description: "Clean White & Black Mobile-First Dynamic Collaboration Platform.",
+  title: "Qollab",
+  description: "More Together, More Savings",
+  openGraph: {
+    title: "Qollab",
+    description: "More Together, More Savings",
+    url: "https://qollab.life",
+    siteName: "Qollab",
+    images: [
+      {
+        url: "/qollab-logo.png",
+        width: 800,
+        height: 600,
+      },
+    ],
+    locale: "ko_KR",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
